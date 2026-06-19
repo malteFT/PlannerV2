@@ -28,12 +28,28 @@ export default async function AppLayout({
           <BottomNav />
         </div>
       </div>
-      <Toaster
-        richColors
-        position="bottom-right"
-        closeButton
-        duration={4000}
-      />
+
+      {/*
+        Toasts: auf Mobile oben (unten sind die Action-Buttons über der
+        Bottom-Nav), auf Desktop unten-rechts. Wir rendern beide Toaster
+        und blenden je nach Viewport einen aus.
+      */}
+      <div className="md:hidden">
+        <Toaster
+          richColors
+          position="top-center"
+          closeButton
+          duration={4000}
+        />
+      </div>
+      <div className="hidden md:block">
+        <Toaster
+          richColors
+          position="bottom-right"
+          closeButton
+          duration={4000}
+        />
+      </div>
     </QueryProvider>
   );
 }
