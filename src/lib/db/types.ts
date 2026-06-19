@@ -136,3 +136,84 @@ export type UserSettings = {
   excluded_ingredient_ids: string[];
   updated_at: string;
 };
+
+// =========================================================================
+// Plan
+// =========================================================================
+
+export type PlanStatus = "draft" | "active" | "archived";
+
+export type Plan = {
+  id: string;
+  user_id: string;
+  name: string | null;
+  day_count: number;
+  day_labels: string[];
+  status: PlanStatus;
+  meal_slots: MealSlot[];
+  meal_slot_pct: number[];
+  target_kcal_per_day: number;
+  protein_pct: number;
+  carbs_pct: number;
+  fat_pct: number;
+  created_at: string;
+  activated_at: string | null;
+  archived_at: string | null;
+};
+
+export type PlanMeal = {
+  id: string;
+  plan_id: string;
+  day_index: number;
+  meal_slot: MealSlot;
+  recipe_id: string | null;
+  serving_factor: number;
+  cooked: boolean;
+  cooked_at: string | null;
+  created_at: string;
+};
+
+export type PlanMealWithRecipe = PlanMeal & {
+  recipe: RecipeWithIngredients | null;
+};
+
+export type PlanWithMeals = Plan & {
+  meals: PlanMealWithRecipe[];
+};
+
+// =========================================================================
+// Vorrat
+// =========================================================================
+
+export type InventoryItem = {
+  user_id: string;
+  ingredient_id: string;
+  amount: number;
+  updated_at: string;
+};
+
+export type InventoryItemWithIngredient = InventoryItem & {
+  ingredient: IngredientWithBls;
+};
+
+// =========================================================================
+// Einkaufsliste
+// =========================================================================
+
+export type ShoppingListItem = {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  ingredient_id: string;
+  required_amount: number;
+  to_buy_amount: number;
+  unit: IngredientUnit;
+  checked: boolean;
+  checked_at: string | null;
+  manual: boolean;
+  created_at: string;
+};
+
+export type ShoppingListItemWithIngredient = ShoppingListItem & {
+  ingredient: IngredientWithBls;
+};
