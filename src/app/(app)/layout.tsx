@@ -26,7 +26,12 @@ export default async function AppLayout({
           <BottomNav />
         </div>
       </div>
-      <Toaster richColors position="top-right" />
+      <Toaster
+        richColors
+        position="bottom-right"
+        closeButton
+        duration={4000}
+      />
     </QueryProvider>
   );
 }
