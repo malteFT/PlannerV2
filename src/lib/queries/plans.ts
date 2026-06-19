@@ -178,18 +178,17 @@ export function useUpdatePlanMeal() {
       servingFactor?: number;
     }) => {
       const supabase = createSupabaseBrowserClient();
-      const update: Record<string, unknown> = {};
-      if (input.recipeId !== undefined) update.recipe_id = input.recipeId;
-      if (input.servingFactor !== undefined)
-        update.serving_factor = input.servingFactor;
-      const { error } = await supabase
-        .from("plan_meal")
-        .update(update)
-        .eq("id", input.mealId);
+      // RPC: update + (bei aktivem Plan) reaggregate_shopping_list
+      const { error } = await supabase.rpc("update_plan_meal", {
+        p_meal_id: input.mealId,
+        p_recipe_id: input.recipeId ?? null,
+        p_serving_factor: input.servingFactor ?? null,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plan"] });
+      qc.invalidateQueries({ queryKey: ["shopping"] });
     },
   });
 }
@@ -219,11 +218,15 @@ export function useDeletePlanMeal() {
   return useMutation({
     mutationFn: async (mealId: string) => {
       const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.from("plan_meal").delete().eq("id", mealId);
+      // RPC: setzt recipe_id=null (Slot bleibt erhalten) + reaggregate
+      const { error } = await supabase.rpc("delete_plan_meal", {
+        p_meal_id: mealId,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plan"] });
+      qc.invalidateQueries({ queryKey: ["shopping"] });
     },
   });
 }

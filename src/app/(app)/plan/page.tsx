@@ -37,7 +37,7 @@ import {
   filterSuppressedRecipes,
   type GeneratedMeal,
 } from "@/lib/domain/generator";
-import { macrosForMeal, formatKcal, formatGrams } from "@/lib/domain/nutrition";
+import { macrosForMeal, macrosPerServing, formatKcal, formatGrams } from "@/lib/domain/nutrition";
 import {
   MEAL_SLOT_LABELS,
   type MealSlot,
@@ -359,22 +359,25 @@ function MealRow({ meal, plan, recipes, settings }: MealRowProps) {
   }
 
   function handleSwap(recipeId: string) {
-    if (!recipe) {
-      // Bei gelöschtem Rezept: Faktor 1 setzen, da der vorhandene Faktor evtl. nicht mehr passt.
-      updateMeal.mutate(
-        { mealId: meal.id, recipeId, servingFactor: 1 },
-        {
-          onSuccess: () => {
-            toast.success("Rezept getauscht.");
-            setSwapOpen(false);
-          },
-          onError: (e) => toast.error(`Fehler: ${(e as Error).message ?? e}`),
-        },
-      );
-      return;
+    // Slot-kcal-Ziel berechnen, neuer Faktor analog Generator (clamp 0.3..3.0).
+    const slotIdx = plan.meal_slots.indexOf(meal.meal_slot);
+    const slotPct = plan.meal_slot_pct[slotIdx] ?? 0;
+    const slotTargetKcal = (plan.target_kcal_per_day * slotPct) / 100;
+    const newRecipe = recipes.find((r) => r.id === recipeId);
+    let factor = 1;
+    if (newRecipe) {
+      const kcalPerServing = macrosPerServing(
+        newRecipe.ingredients,
+        newRecipe.base_servings,
+      ).kcal;
+      if (kcalPerServing > 0) {
+        const ideal = slotTargetKcal / kcalPerServing;
+        factor = Math.max(0.3, Math.min(3.0, ideal));
+        factor = Math.round(factor * 1000) / 1000;
+      }
     }
     updateMeal.mutate(
-      { mealId: meal.id, recipeId },
+      { mealId: meal.id, recipeId, servingFactor: factor },
       {
         onSuccess: () => {
           toast.success("Rezept getauscht.");

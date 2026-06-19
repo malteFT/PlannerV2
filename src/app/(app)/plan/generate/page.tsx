@@ -21,7 +21,7 @@ import {
   type GeneratedMeal,
   type GenerateError,
 } from "@/lib/domain/generator";
-import { formatGrams, formatKcal, macrosForMeal } from "@/lib/domain/nutrition";
+import { formatGrams, formatKcal, macrosForMeal, macrosPerServing } from "@/lib/domain/nutrition";
 
 import { useSettings } from "@/lib/queries/settings";
 import { useRecipes } from "@/lib/queries/recipes";
@@ -169,6 +169,9 @@ export default function PlanGeneratePage() {
   // ---------- Aktion: einzelne Mahlzeit würfeln ----------
   function handleReroll(dayIndex: number, slot: MealSlot) {
     if (!meals || !planSettings) return;
+    // Pro Klick neuer Seed, sonst landet jeder Klick in derselben deterministischen
+    // Rangfolge und der User würde nur zwischen 2 Rezepten wechseln.
+    const rerollSeed = Math.floor(Math.random() * 1e9);
     const result = rerollMeal({
       dayCount: planDayLabels.length,
       mealSlots: planSettings.meal_slots,
@@ -176,7 +179,7 @@ export default function PlanGeneratePage() {
       targetKcalPerDay: planSettings.target_kcal_per_day,
       tolerancePct: planSettings.tolerance_pct,
       recipes: recipePool,
-      seed,
+      seed: rerollSeed,
       existingMeals: meals,
       target: { dayIndex, mealSlot: slot },
       excludeCurrentRecipe: true,
@@ -194,10 +197,29 @@ export default function PlanGeneratePage() {
 
   // ---------- Aktion: manuelles Tauschen ----------
   function handleSwap(dayIndex: number, slot: MealSlot, recipeId: string) {
+    if (!planSettings) return;
+    // Faktor passend zum Slot-kcal-Ziel berechnen (analog zum Generator),
+    // damit die Tagesziel-Anzeige nach Tausch sinnvoll bleibt.
+    const recipe = recipePool.find((r) => r.id === recipeId);
+    const slotIdx = planSettings.meal_slots.indexOf(slot);
+    const slotPct = planSettings.meal_slot_pct[slotIdx] ?? 0;
+    const slotTargetKcal = (planSettings.target_kcal_per_day * slotPct) / 100;
+    let factor = 1;
+    if (recipe) {
+      const kcalPerServing = macrosPerServing(
+        recipe.ingredients,
+        recipe.base_servings,
+      ).kcal;
+      if (kcalPerServing > 0) {
+        const ideal = slotTargetKcal / kcalPerServing;
+        factor = Math.max(0.3, Math.min(3.0, ideal));
+        factor = Math.round(factor * 1000) / 1000;
+      }
+    }
     setMeals((prev) =>
       (prev ?? []).map((m) =>
         m.dayIndex === dayIndex && m.mealSlot === slot
-          ? { ...m, recipeId, servingFactor: 1 }
+          ? { ...m, recipeId, servingFactor: factor }
           : m,
       ),
     );

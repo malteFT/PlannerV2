@@ -160,17 +160,9 @@ export function IngredientForm({ defaultValues, onSubmit, submitLabel }: Props) 
         )}
       </Field>
 
-      <Field control={form.control} name="excluded">
-        {(f) => (
-          <label className="flex items-center gap-3">
-            <Switch
-              checked={!!f.value}
-              onCheckedChange={(v) => f.onChange(!!v)}
-            />
-            <span className="text-sm">Beim Generieren ausschließen</span>
-          </label>
-        )}
-      </Field>
+      <p className="text-xs text-muted-foreground">
+        Globale Ausschluss-Liste für den Generator wird in den Settings gepflegt.
+      </p>
 
       <div className="flex gap-2">
         <Button type="submit" disabled={form.formState.isSubmitting}>

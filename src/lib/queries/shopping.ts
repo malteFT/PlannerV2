@@ -75,29 +75,70 @@ export function useAddManualShoppingItem() {
       planId: string;
       ingredientId: string;
       amount: number;
-      unit: "g" | "ml" | "piece";
     }) => {
       const supabase = createSupabaseBrowserClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Nicht angemeldet");
-      const { error } = await supabase
+
+      // Unit wird immer aus ingredient.default_unit gelesen — keine User-Wahl,
+      // damit pro Zutat genau eine Einheit in der Liste steht.
+      const ingResp = await supabase
+        .from("ingredient")
+        .select("default_unit")
+        .eq("id", input.ingredientId)
+        .single();
+      if (ingResp.error) throw ingResp.error;
+      const unit = ingResp.data.default_unit as "g" | "ml" | "piece";
+
+      // Vorrat (für to_buy-Berechnung)
+      const invResp = await supabase
+        .from("inventory_item")
+        .select("amount")
+        .eq("user_id", user.id)
+        .eq("ingredient_id", input.ingredientId)
+        .maybeSingle();
+      if (invResp.error) throw invResp.error;
+      const inventoryAmount = invResp.data?.amount ?? 0;
+
+      // Bestehenden Eintrag suchen
+      const existing = await supabase
         .from("shopping_list_item")
-        .upsert(
-          {
-            user_id: user.id,
-            plan_id: input.planId,
-            ingredient_id: input.ingredientId,
-            required_amount: input.amount,
-            to_buy_amount: input.amount,
-            unit: input.unit,
-            manual: true,
-            checked: false,
-          },
-          { onConflict: "plan_id,ingredient_id" },
-        );
-      if (error) throw error;
+        .select("id, required_amount, manual, checked")
+        .eq("plan_id", input.planId)
+        .eq("ingredient_id", input.ingredientId)
+        .maybeSingle();
+      if (existing.error) throw existing.error;
+
+      if (existing.data) {
+        // Aufaddieren (anstatt überschreiben)
+        const newRequired = (existing.data.required_amount ?? 0) + input.amount;
+        const newToBuy = Math.max(0, newRequired - inventoryAmount);
+        const { error } = await supabase
+          .from("shopping_list_item")
+          .update({
+            required_amount: newRequired,
+            to_buy_amount: newToBuy,
+            unit,
+            manual: existing.data.manual,
+          })
+          .eq("id", existing.data.id);
+        if (error) throw error;
+      } else {
+        const newToBuy = Math.max(0, input.amount - inventoryAmount);
+        const { error } = await supabase.from("shopping_list_item").insert({
+          user_id: user.id,
+          plan_id: input.planId,
+          ingredient_id: input.ingredientId,
+          required_amount: input.amount,
+          to_buy_amount: newToBuy,
+          unit,
+          manual: true,
+          checked: false,
+        });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["shopping"] });

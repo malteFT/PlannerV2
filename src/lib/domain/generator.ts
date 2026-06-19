@@ -47,6 +47,8 @@ export type GeneratedMeal = {
   mealSlot: MealSlot;
   recipeId: string;
   servingFactor: number;
+  /** True wenn die kcal-Toleranz für diesen Slot nicht eingehalten werden konnte. */
+  outsideTolerance?: boolean;
 };
 
 export type GenerateError =
@@ -54,7 +56,7 @@ export type GenerateError =
   | { kind: "empty_recipes" };
 
 export type GenerateResult =
-  | { ok: true; meals: GeneratedMeal[] }
+  | { ok: true; meals: GeneratedMeal[]; warnings: string[] }
   | { ok: false; error: GenerateError };
 
 const MIN_FACTOR = 0.3;
@@ -94,6 +96,8 @@ export function generatePlan(input: GeneratorInput): GenerateResult {
 
   const usageCount = new Map<string, number>(); // wie oft wurde Rezept im Plan schon gewählt?
   const meals: GeneratedMeal[] = [];
+  const warnings: string[] = [];
+  const tolerance = (input.tolerancePct ?? 5) / 100;
 
   for (let day = 0; day < input.dayCount; day++) {
     const usedToday = new Set<string>();
@@ -116,6 +120,7 @@ export function generatePlan(input: GeneratorInput): GenerateResult {
       let bestRecipe: RecipeWithIngredients | null = null;
       let bestScore = Infinity;
       let bestFactor = 1;
+      let bestAchievedKcal = 0;
 
       for (const r of candidates) {
         const kcalPerServing = kcalPerServingByRecipe.get(r.id) ?? 0;
@@ -123,9 +128,8 @@ export function generatePlan(input: GeneratorInput): GenerateResult {
 
         const idealFactor = slotTargetKcal / kcalPerServing;
         const clampedFactor = Math.max(MIN_FACTOR, Math.min(MAX_FACTOR, idealFactor));
+        const achievedKcal = kcalPerServing * clampedFactor;
 
-        // Wenn der Idealfaktor außerhalb der erlaubten Range liegt, treffen wir
-        // das Ziel nicht exakt — das fließt in den Score.
         const fitPenalty = Math.abs(clampedFactor - 1);
         const repeatPenalty = (usageCount.get(r.id) ?? 0) * REPEAT_PENALTY_WEIGHT;
         const tiebreak = rand() * RANDOM_TIEBREAK;
@@ -135,6 +139,7 @@ export function generatePlan(input: GeneratorInput): GenerateResult {
           bestScore = score;
           bestRecipe = r;
           bestFactor = clampedFactor;
+          bestAchievedKcal = achievedKcal;
         }
       }
 
@@ -142,18 +147,31 @@ export function generatePlan(input: GeneratorInput): GenerateResult {
         return { ok: false, error: { kind: "no_candidates", mealSlot: slot, dayIndex: day } };
       }
 
+      // Toleranz-Check
+      const relativeError =
+        slotTargetKcal > 0
+          ? Math.abs(bestAchievedKcal - slotTargetKcal) / slotTargetKcal
+          : 0;
+      const outsideTolerance = relativeError > tolerance;
+      if (outsideTolerance) {
+        warnings.push(
+          `Tag ${day + 1} ${slot}: Ziel ${Math.round(slotTargetKcal)} kcal nicht in ±${input.tolerancePct ?? 5}% erreichbar (Ist: ${Math.round(bestAchievedKcal)} kcal). Skalierung clamped auf [${MIN_FACTOR}, ${MAX_FACTOR}].`,
+        );
+      }
+
       meals.push({
         dayIndex: day,
         mealSlot: slot,
         recipeId: bestRecipe.id,
         servingFactor: roundFactor(bestFactor),
+        outsideTolerance: outsideTolerance || undefined,
       });
       usedToday.add(bestRecipe.id);
       usageCount.set(bestRecipe.id, (usageCount.get(bestRecipe.id) ?? 0) + 1);
     }
   }
 
-  return { ok: true, meals };
+  return { ok: true, meals, warnings };
 }
 
 // =========================================================================

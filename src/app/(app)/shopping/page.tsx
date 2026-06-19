@@ -331,7 +331,6 @@ function AddManualDialog({ open, onOpenChange, planId }: AddManualDialogProps) {
 
   const [ingredientId, setIngredientId] = React.useState<string>("");
   const [amount, setAmount] = React.useState<string>("");
-  const [unit, setUnit] = React.useState<IngredientUnit>("g");
 
   // Reset on open
   React.useEffect(() => {
@@ -340,17 +339,12 @@ function AddManualDialog({ open, onOpenChange, planId }: AddManualDialogProps) {
       setIngredientId("");
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAmount("");
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUnit("g");
     }
   }, [open]);
 
-  // When ingredient changes, prefill default unit
   const handleIngredientChange = (id: string | null) => {
     if (!id) return;
     setIngredientId(id);
-    const ing = ingredients?.find((i) => i.id === id);
-    if (ing) setUnit(ing.default_unit);
   };
 
   const sortedIngredients = React.useMemo(
@@ -360,6 +354,8 @@ function AddManualDialog({ open, onOpenChange, planId }: AddManualDialogProps) {
         .sort((a, b) => a.display_name.localeCompare(b.display_name, "de")),
     [ingredients],
   );
+
+  const selectedIngredient = ingredients?.find((i) => i.id === ingredientId);
 
   const canSubmit =
     ingredientId !== "" &&
@@ -374,7 +370,6 @@ function AddManualDialog({ open, onOpenChange, planId }: AddManualDialogProps) {
         planId,
         ingredientId,
         amount: Number(amount),
-        unit,
       },
       {
         onSuccess: () => {
@@ -436,21 +431,11 @@ function AddManualDialog({ open, onOpenChange, planId }: AddManualDialogProps) {
 
           <div className="flex flex-col gap-2">
             <Label>Einheit</Label>
-            <Select
-              value={unit}
-              onValueChange={(v) => setUnit(v as IngredientUnit)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ALL_UNITS.map((u) => (
-                  <SelectItem key={u} value={u}>
-                    {UNIT_LABELS[u]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <p className="text-sm text-muted-foreground">
+              {selectedIngredient
+                ? UNIT_LABELS[selectedIngredient.default_unit]
+                : "—"}
+            </p>
           </div>
         </div>
 

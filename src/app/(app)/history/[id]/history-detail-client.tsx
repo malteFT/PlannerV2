@@ -29,6 +29,20 @@ function formatDateTime(iso: string | null): string {
   }
 }
 
+function formatDate(iso: string | null): string {
+  if (!iso) return "—";
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
 export function HistoryDetailClient({ id }: { id: string }) {
   const query = usePlan(id);
 
@@ -61,7 +75,7 @@ export function HistoryDetailClient({ id }: { id: string }) {
           </Button>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              {plan.name ?? "Plan"}
+              {plan.name ?? `Plan vom ${formatDate(plan.activated_at ?? plan.created_at)}`}
             </h1>
             <p className="text-xs text-muted-foreground">
               Aktiv: {formatDateTime(plan.activated_at)} — Archiviert:{" "}
