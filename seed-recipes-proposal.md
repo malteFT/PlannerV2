@@ -30,7 +30,7 @@ Pro Rezept den Status:_-Marker zu OK / NEIN / KORRIGIEREN ändern und schick die
 **Zubereitung:**
 Eier mit der Milch in einer Schüssel verquirlen und leicht mit Salz und Pfeffer würzen. Butter in einer Pfanne bei mittlerer Hitze schmelzen lassen, die Eimasse hineingeben und mit einem Spatel langsam zu cremigem Rührei stocken lassen. Tomate in Scheiben schneiden und neben dem Brot anrichten. Vollkornbrot dazu servieren und das Rührei darüber verteilen.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -53,7 +53,7 @@ Eier mit der Milch in einer Schüssel verquirlen und leicht mit Salz und Pfeffer
 Ei in einem kleinen Topf hart kochen, abschrecken und in Scheiben schneiden. Roggenbrot dünn mit Butter bestreichen und mit dem Gouda belegen. Gurke in feine Scheiben hobeln und zusammen mit dem Ei auf dem Brot verteilen. Mit etwas Pfeffer würzen und sofort servieren.
 
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -75,7 +75,7 @@ Ei in einem kleinen Topf hart kochen, abschrecken und in Scheiben schneiden. Rog
 **Zubereitung:**
 Brötchen aufschneiden und kurz im Ofen oder Toaster aufbacken. Spinatblätter waschen und auf den Brötchenhälften verteilen. Hüttenkäse darauf streichen und mit dünnen Tomatenscheiben belegen. Mit frisch gemahlenem Pfeffer abschmecken und direkt genießen.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -96,7 +96,7 @@ Brötchen aufschneiden und kurz im Ofen oder Toaster aufbacken. Spinatblätter w
 **Zubereitung:**
 Haferflocken mit der Milch in einen kleinen Topf geben und unter Rühren bei mittlerer Hitze etwa fünf Minuten köcheln lassen, bis das Porridge cremig wird. In eine Schüssel umfüllen und kurz ruhen lassen. Banane in Scheiben schneiden und auf dem Porridge verteilen. Walnüsse grob hacken und darüberstreuen.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -117,7 +117,7 @@ Haferflocken mit der Milch in einen kleinen Topf geben und unter Rühren bei mit
 **Zubereitung:**
 Naturjoghurt in eine Schale geben und glatt rühren. Müsli darüber verteilen und leicht andrücken. Erdbeeren waschen, vierteln und mit den Heidelbeeren obenauf anrichten. Vor dem Verzehr kurz ziehen lassen, damit das Müsli leicht weich wird.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -139,15 +139,15 @@ Naturjoghurt in eine Schale geben und glatt rühren. Müsli darüber verteilen u
 Apfel waschen, entkernen und in kleine Würfel schneiden. Haferflocken mit der Milch und der Hälfte der Apfelwürfel in einem Topf aufkochen und etwa vier Minuten köcheln lassen, damit der Apfel weich wird. In eine Schale füllen und mit den restlichen frischen Apfelstücken belegen. Mandeln grob hacken und über das Porridge streuen.
 
 **Notes:** Zimt wäre klassisch, ist aber keine Stammzutat — daher weggelassen, der gekochte Apfel bringt genug Süße.
-**Status:** _
+**Status:** OK
 
 ---
 
-### R07 · Quark mit Beeren und Honigersatz
+### R07 · Quark mit Beeren und Honig
 
 **Mahlzeit:** Frühstück, Snack
 **Basisportionen:** 1
-**Schätzung:** ~310 kcal · P 33g · KH 32g · F 5g
+**Schätzung:** ~325 kcal · P 33g · KH 35g · F 5g
 
 **Zutaten:**
 | Zutat | Menge | Einheit |
@@ -156,13 +156,12 @@ Apfel waschen, entkernen und in kleine Würfel schneiden. Haferflocken mit der M
 | Heidelbeeren | 80 | g |
 | Erdbeeren | 80 | g |
 | Hafer Flocken | 15 | g |
-| Zucker (weiß) | 5 | g |
+| Honig | 8 | g |
 
 **Zubereitung:**
-Quark mit dem Zucker in einer Schale glatt rühren, bis eine cremige Konsistenz entsteht. Erdbeeren waschen, in Scheiben schneiden und mit den Heidelbeeren auf dem Quark verteilen. Haferflocken trocken in einer Pfanne kurz anrösten, bis sie duften, und über die Beeren streuen. Sofort servieren, damit die Flocken knusprig bleiben.
+Quark mit dem Honig in einer Schale glatt rühren, bis eine cremige Konsistenz entsteht. Erdbeeren waschen, in Scheiben schneiden und mit den Heidelbeeren auf dem Quark verteilen. Haferflocken trocken in einer Pfanne kurz anrösten, bis sie duften, und über die Beeren streuen. Sofort servieren, damit die Flocken knusprig bleiben.
 
-**Notizen:** Honig ist keine Stammzutat — leichte Süße kommt aus etwas Zucker und den Beeren.
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -183,7 +182,7 @@ Quark mit dem Zucker in einer Schale glatt rühren, bis eine cremige Konsistenz 
 **Zubereitung:**
 Griechischen Joghurt in eine Schale geben und kurz glatt rühren. Banane in Scheiben schneiden und auf dem Joghurt anrichten. Erdnüsse grob hacken und zusammen mit den Haferflocken darüberstreuen. Direkt servieren, damit alles seine Textur behält.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -208,7 +207,7 @@ Griechischen Joghurt in eine Schale geben und kurz glatt rühren. Banane in Sche
 **Zubereitung:**
 Zwiebel, Knoblauch und Karotte fein würfeln und in Olivenöl glasig anschwitzen. Hackfleisch dazugeben, krümelig braten und mit Tomatenpassata ablöschen. Bei mittlerer Hitze 15 Minuten köcheln lassen und mit Salz und Pfeffer abschmecken. Nudeln parallel in Salzwasser bissfest kochen, abtropfen lassen und mit der Soße sowie geriebenem Gouda anrichten.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -230,7 +229,7 @@ Zwiebel, Knoblauch und Karotte fein würfeln und in Olivenöl glasig anschwitzen
 **Zubereitung:**
 Reis nach Packungsanweisung in Salzwasser garen. Brokkoli in Röschen teilen und 5 Minuten dampfgaren, sodass er bissfest bleibt. Hähnchenbrust in Streifen schneiden, in Olivenöl mit gehacktem Knoblauch scharf anbraten und mit Salz und Pfeffer würzen. Alles zusammen auf einem Teller anrichten.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -254,7 +253,7 @@ Reis nach Packungsanweisung in Salzwasser garen. Brokkoli in Röschen teilen und
 **Zubereitung:**
 Süßkartoffel schälen, würfeln und 15 Minuten weich kochen, danach mit Butter zu einem Püree stampfen. Lachs trocken tupfen, mit Salz und Pfeffer würzen und in Olivenöl auf der Hautseite knusprig braten. Spinat mit gehacktem Knoblauch kurz zusammenfallen lassen. Alles anrichten und mit einem Spritzer Zitrone servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -277,7 +276,7 @@ Süßkartoffel schälen, würfeln und 15 Minuten weich kochen, danach mit Butter
 **Zubereitung:**
 Nudeln in Salzwasser bissfest kochen. Zwiebel und Knoblauch fein hacken und in Olivenöl andünsten, dann gehackte Tomaten zugeben und 8 Minuten einköcheln lassen. Abgetropften Thunfisch unterheben und mit Salz und Pfeffer abschmecken. Soße mit den Nudeln vermengen und sofort servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -303,7 +302,7 @@ Nudeln in Salzwasser bissfest kochen. Zwiebel und Knoblauch fein hacken und in O
 Putenbrust in Streifen schneiden, mit Salz und Pfeffer würzen und in einer Pfanne ohne Öl scharf anbraten. Eisbergsalat, Tomate, Gurke und Paprika in mundgerechte Stücke schneiden und in einer Schüssel vermischen. Olivenöl mit Zitronensaft zu einem Dressing verrühren und untermengen. Pute und gebröckelten Feta darüber verteilen.
 
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -328,7 +327,7 @@ Putenbrust in Streifen schneiden, mit Salz und Pfeffer würzen und in einer Pfan
 **Zubereitung:**
 Basmatireis in Salzwasser garen und auskühlen lassen. Kichererbsen abspülen und mit Knoblauch in etwas Olivenöl anbraten, bis sie leicht knusprig sind. Spinat und Tomatenwürfel in einer Schüssel mit Reis schichten, Kichererbsen darauf verteilen und mit Feta bestreuen. Mit restlichem Olivenöl und Zitronensaft beträufeln und mit Salz und Pfeffer abschmecken.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -351,7 +350,7 @@ Basmatireis in Salzwasser garen und auskühlen lassen. Kichererbsen abspülen un
 **Zubereitung:**
 Kartoffeln schälen, in Würfel schneiden und 12 Minuten weich kochen. Putenbrust würfeln und in Olivenöl mit Zwiebeln scharf anbraten, dann geviertelte Champignons zugeben und mitbraten, bis sie Farbe nehmen. Mit Salz und Pfeffer abschmecken und einen Klecks griechischen Joghurt als sahnige Note unterrühren. Mit den Kartoffeln zusammen servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -375,8 +374,8 @@ Kartoffeln schälen, in Würfel schneiden und 12 Minuten weich kochen. Putenbrus
 **Zubereitung:**
 Zwiebel, Knoblauch und Karotte würfeln und in Olivenöl 5 Minuten anschwitzen. Rote Linsen und gehackte Tomaten dazugeben, mit etwa 350 ml Wasser auffüllen und 15 Minuten köcheln, bis die Linsen weich sind. Mit Salz, Pfeffer und einem Spritzer Zitronensaft abschmecken. Bei Bedarf etwas mehr Wasser ergänzen, falls der Eintopf zu fest wird.
 
-**Notizen:** Hinweis — Name kollidiert nahezu mit R23 ("Rote Linsen-Eintopf mit Karotte und Tomate"). Inhaltlich sehr ähnlich, formal aber kein exaktes Duplikat.
-**Status:** _
+**Notizen:** REDUNDANT zu R23 ("Rote Linsen-Eintopf mit Karotte und Tomate") — User behält R23.
+**Status:** NEIN
 
 ---
 
@@ -400,7 +399,7 @@ Zwiebel, Knoblauch und Karotte würfeln und in Olivenöl 5 Minuten anschwitzen. 
 Kartoffeln waschen, in Spalten schneiden, mit Olivenöl und Salz vermengen und bei 200 Grad rund 25 Minuten goldbraun backen. Tomate und Gurke fein würfeln und mit Hüttenkäse vermischen, mit Pfeffer abschmecken. Ofenkartoffeln auf einen Teller geben und den Hüttenkäse-Dip dazu reichen. Schnelles Mittagessen mit hohem Eiweißanteil.
 
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -424,7 +423,7 @@ Kartoffeln waschen, in Spalten schneiden, mit Olivenöl und Salz vermengen und b
 **Zubereitung:**
 Zwiebel, Knoblauch und Karotte fein würfeln und in Olivenöl 5 Minuten anschwitzen. Gehackte Tomaten und abgespülte weiße Bohnen zugeben, mit etwa 250 ml Wasser auffüllen und 12 Minuten köcheln. Etwa ein Drittel der Suppe mit dem Stabmixer pürieren, um eine cremigere Konsistenz zu erhalten, und mit Salz und Pfeffer abschmecken. Mit einer Scheibe Vollkornbrot servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -449,7 +448,7 @@ Zwiebel, Knoblauch und Karotte fein würfeln und in Olivenöl 5 Minuten anschwit
 **Zubereitung:**
 Reis nach Packungsanweisung in Salzwasser garen. Hähnchenbrust in Streifen schneiden und in heißem Olivenöl scharf anbraten, dann beiseitestellen. Paprika und Zwiebel in der gleichen Pfanne weich braten, gehackten Knoblauch kurz mitrösten. Hähnchen zurück in die Pfanne geben, mit Salz und Pfeffer abschmecken und mit dem Reis servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -474,7 +473,7 @@ Reis nach Packungsanweisung in Salzwasser garen. Hähnchenbrust in Streifen schn
 **Zubereitung:**
 Süßkartoffel in Würfel schneiden, mit der Hälfte des Olivenöls und etwas Salz vermengen und bei 200 Grad etwa 20 Minuten vorbacken. Brokkoli in Röschen teilen, gehackten Knoblauch und restliches Öl daruntermischen und mit auf das Blech geben. Lachsfilet daneben legen, mit Zitronensaft beträufeln und weitere 12-15 Minuten mitbacken. Mit Salz, Pfeffer und einer Zitronenscheibe servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -482,7 +481,7 @@ Süßkartoffel in Würfel schneiden, mit der Hälfte des Olivenöls und etwas Sa
 
 **Mahlzeit:** Abend
 **Basisportionen:** 1
-**Schätzung:** ~510 kcal · P 48g · KH 18g · F 26g
+**Schätzung:** ~610 kcal · P 44g · KH 16g · F 38g
 
 **Zutaten:**
 | Zutat | Menge | Einheit |
@@ -490,17 +489,14 @@ Süßkartoffel in Würfel schneiden, mit der Hälfte des Olivenöls und etwas Sa
 | Putenbrust | 160 | g |
 | Champignons | 200 | g |
 | Zwiebel | 60 | g |
-| griechischer Joghurt | 100 | g |
+| Schlagsahne 30% | 60 | g |
 | Olivenöl | 10 | ml |
 | Knoblauch | 4 | g |
-| Salz | 1 | g |
-| Pfeffer schwarz | 1 | g |
 
 **Zubereitung:**
-Putenbrust in Streifen schneiden und in heißem Olivenöl rundherum anbraten. Zwiebel und in Scheiben geschnittene Champignons dazugeben und so lange braten, bis die Flüssigkeit verdampft ist. Knoblauch kurz mitschwitzen, dann die Pfanne von der Hitze nehmen und den griechischen Joghurt unterrühren. Mit Salz und Pfeffer abschmecken und sofort servieren.
+Putenbrust in Streifen schneiden und in heißem Olivenöl rundherum anbraten. Zwiebel und in Scheiben geschnittene Champignons dazugeben und so lange braten, bis die Flüssigkeit verdampft ist. Knoblauch kurz mitschwitzen, dann mit der Schlagsahne ablöschen und kurz aufkochen lassen, bis die Sauce leicht eindickt. Mit Salz und Pfeffer abschmecken und sofort servieren.
 
-**Notizen:** Sahne durch griechischen Joghurt ersetzt; Pfanne vor dem Joghurt von der Hitze nehmen, damit er nicht ausflockt.
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -525,7 +521,7 @@ Putenbrust in Streifen schneiden und in heißem Olivenöl rundherum anbraten. Zw
 **Zubereitung:**
 Blumenkohl in Röschen teilen, mit Olivenöl, gehacktem Knoblauch und Salz vermengen und auf einem Blech bei 200 Grad rund 20 Minuten rösten. Hähnchenbrust mit Pfeffer würzen und in den letzten 15 Minuten mit aufs Blech legen. Vor dem Servieren Feta darüberbröseln und mit Zitronensaft abschmecken. Mit Pfeffer abrunden und direkt aus dem Ofen essen.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -551,7 +547,7 @@ Blumenkohl in Röschen teilen, mit Olivenöl, gehacktem Knoblauch und Salz verme
 Zwiebel und Karotte fein würfeln und in Olivenöl andünsten, gehackten Knoblauch kurz mitschwitzen. Linsen und gehackte Tomaten dazugeben, mit etwa 400 ml Wasser aufgießen und alles aufkochen. Bei mittlerer Hitze 15-20 Minuten köcheln, bis die Linsen weich und der Eintopf sämig ist. Mit Salz und Pfeffer kräftig abschmecken.
 
 **Notizen:** Hinweis — Name liegt nah an R16 ("Rote-Linsen-Eintopf mit Karotten"). Bitte prüfen, ob beide nebeneinander gewünscht sind.
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -577,7 +573,7 @@ Zwiebel und Karotte fein würfeln und in Olivenöl andünsten, gehackten Knoblau
 **Zubereitung:**
 Zwiebel und Knoblauch in Olivenöl glasig dünsten, gewürfelte Tomate dazugeben und kurz einkochen lassen. Abgetropfte Kichererbsen einrühren und ein paar Minuten mitbraten, bis sie leicht Farbe nehmen. Spinat portionsweise unterheben, bis er zusammenfällt. Mit Salz und Pfeffer abschmecken und mit gebröseltem Feta bestreut servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -602,7 +598,7 @@ Zwiebel und Knoblauch in Olivenöl glasig dünsten, gewürfelte Tomate dazugeben
 Eier in kochendem Wasser etwa 8 Minuten hart kochen, abschrecken und in Scheiben schneiden. Vollkornbrotscheiben dick mit Hüttenkäse bestreichen. Gurke und Tomate in Scheiben schneiden und zusammen mit den Eierscheiben auf den Broten verteilen. Mit Salz und Pfeffer würzen und als zwei belegte Stullen servieren.
 
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -626,7 +622,7 @@ Eier in kochendem Wasser etwa 8 Minuten hart kochen, abschrecken und in Scheiben
 **Zubereitung:**
 Toastbrot rösten, Avocado halbieren und das Fruchtfleisch mit etwas Zitronensaft und Salz zerdrücken. Eier in Olivenöl als Spiegeleier braten, bis das Eiweiß gestockt und das Eigelb noch leicht flüssig ist. Avocadocreme auf den Toast streichen und die Spiegeleier daraufsetzen. Mit Pfeffer und einem Spritzer Zitrone vollenden.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -651,7 +647,7 @@ Toastbrot rösten, Avocado halbieren und das Fruchtfleisch mit etwas Zitronensaf
 **Zubereitung:**
 Zwiebel fein würfeln und in Olivenöl glasig dünsten, gehackten Knoblauch kurz mitschwitzen. Mit Tomatenpassata und etwa 150 ml Wasser ablöschen und 10 Minuten köcheln lassen. Abgetropfte Bohnen dazugeben und weitere 5 Minuten ziehen lassen, bis alles heiß ist. Mit Salz und Pfeffer abschmecken und die Suppe mit einer Scheibe Vollkornbrot servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -675,7 +671,7 @@ Zwiebel fein würfeln und in Olivenöl glasig dünsten, gehackten Knoblauch kurz
 **Zubereitung:**
 Kartoffeln in Spalten schneiden, mit zwei Dritteln des Olivenöls, Salz und gehacktem Knoblauch vermengen und bei 200 Grad rund 30 Minuten goldbraun backen. Hähnchenbrust mit dem Saft einer halben Zitrone, restlichem Öl, Salz und Pfeffer marinieren. In einer Pfanne von beiden Seiten je 4-5 Minuten goldbraun braten und kurz ruhen lassen. Mit den Kartoffelspalten und einer Zitronenscheibe servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -695,7 +691,7 @@ Kartoffeln in Spalten schneiden, mit zwei Dritteln des Olivenöls, Salz und geha
 **Zubereitung:**
 Den griechischen Joghurt in eine Schale geben und glatt rühren. Heidelbeeren waschen und auf dem Joghurt verteilen. Walnüsse grob hacken und darüber streuen. Direkt servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -716,7 +712,7 @@ Den griechischen Joghurt in eine Schale geben und glatt rühren. Heidelbeeren wa
 Den Magerquark cremig rühren, bei Bedarf mit einem Schuss Wasser geschmeidiger machen. Erdbeeren waschen, in Stücke schneiden und unter den Quark heben. Mit gehackten Mandeln bestreuen und sofort essen.
 
 **Notizen:** Protein-fokussiert durch Magerquark.
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -735,7 +731,7 @@ Den Magerquark cremig rühren, bei Bedarf mit einem Schuss Wasser geschmeidiger 
 **Zubereitung:**
 Die Banane schälen und in mundgerechte Scheiben schneiden. Die Erdnüsse grob hacken oder ganz lassen. Banane und Nüsse zusammen anrichten und genießen. Schmeckt auch gut, wenn die Banane vorher kurz angefroren wird.
 
-**Status:** _
+**Status:** OK
 
 ---
 
@@ -755,6 +751,6 @@ Die Banane schälen und in mundgerechte Scheiben schneiden. Die Erdnüsse grob h
 **Zubereitung:**
 Eine Scheibe Vollkornbrot bereitlegen. Gouda in dünne Scheiben schneiden und auf das Brot legen. Die Tomate in Scheiben schneiden, darauf verteilen und mit Salz und Pfeffer abschmecken. Direkt servieren.
 
-**Status:** _
+**Status:** OK
 
 ---
