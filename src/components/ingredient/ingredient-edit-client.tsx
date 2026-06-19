@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ChevronLeft, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,11 @@ import {
 } from "@/lib/queries/ingredients";
 import type { IngredientFormValues } from "@/lib/validators";
 import type { IngredientCategory } from "@/lib/db/types";
+import {
+  formatGrams,
+  formatKcal,
+  macrosForIngredientAmount,
+} from "@/lib/domain/nutrition";
 
 export function IngredientEditClient({ id }: { id: string }) {
   const router = useRouter();
@@ -119,6 +125,78 @@ export function IngredientEditClient({ id }: { id: string }) {
         onSubmit={handleSubmit}
         submitLabel="Speichern"
       />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Nährwerte (BLS)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-xs text-muted-foreground">
+            BLS-Eintrag: {data.bls.name_de} ({data.bls.bls_code})
+          </p>
+          <div className="grid grid-cols-2 gap-y-1 sm:grid-cols-4">
+            <div>
+              <span className="text-muted-foreground">kcal: </span>
+              <span className="font-medium">
+                {formatKcal(data.bls.kcal_per_100g)}
+              </span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Protein: </span>
+              <span className="font-medium">
+                {formatGrams(data.bls.protein_per_100g)}
+              </span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">KH: </span>
+              <span className="font-medium">
+                {formatGrams(data.bls.carbs_per_100g)}
+              </span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Fett: </span>
+              <span className="font-medium">
+                {formatGrams(data.bls.fat_per_100g)}
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">jeweils pro 100 g</p>
+          {data.default_unit === "piece" && data.grams_per_piece ? (
+            <div className="border-t pt-2">
+              {(() => {
+                const m = macrosForIngredientAmount(1, "piece", data);
+                return (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      Pro Stück (≈ {data.grams_per_piece} g)
+                    </p>
+                    <div className="grid grid-cols-2 gap-y-1 sm:grid-cols-4">
+                      <div>
+                        <span className="text-muted-foreground">kcal: </span>
+                        <span className="font-medium">{formatKcal(m.kcal)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Protein: </span>
+                        <span className="font-medium">
+                          {formatGrams(m.protein)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">KH: </span>
+                        <span className="font-medium">{formatGrams(m.carbs)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Fett: </span>
+                        <span className="font-medium">{formatGrams(m.fat)}</span>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
 
       <Dialog open={blockedOpen} onOpenChange={setBlockedOpen}>
         <DialogContent>

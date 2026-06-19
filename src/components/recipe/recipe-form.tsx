@@ -1,7 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  useWatch,
+  Controller,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -72,7 +77,6 @@ export function RecipeForm({ defaultValues, onSubmit, submitLabel }: Props) {
   const {
     control,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors, isSubmitting },
   } = form;
@@ -89,8 +93,10 @@ export function RecipeForm({ defaultValues, onSubmit, submitLabel }: Props) {
     return m;
   }, [ingredientsData]);
 
-  const watchedIngredients = watch("ingredients");
-  const watchedBaseServings = watch("base_servings");
+  // useWatch (statt form.watch) — subscribed sauber auf jede Änderung,
+  // inkl. neu via useFieldArray.append() hinzugefügter Reihen.
+  const watchedIngredients = useWatch({ control, name: "ingredients" });
+  const watchedBaseServings = useWatch({ control, name: "base_servings" });
 
   const liveMacros = React.useMemo(() => {
     const items: RecipeIngredientWithIngredient[] = [];
