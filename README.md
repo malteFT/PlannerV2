@@ -28,8 +28,12 @@ Doku: siehe [`SPEC.md`](./SPEC.md) und [`ARCHITECTURE.md`](./ARCHITECTURE.md).
    SUPABASE_SERVICE_ROLE_KEY=<service-role-key>     # nur lokal, niemals committen
    ```
 
-3. DB-Schema in Supabase anlegen — den Inhalt von
-   `supabase/migrations/0001_init.sql` im Supabase SQL-Editor ausführen.
+3. DB-Schema in Supabase anlegen — der Inhalt von **allen** Migrations-Dateien
+   nacheinander im Supabase SQL-Editor ausführen:
+   - `supabase/migrations/0001_init.sql` (BLS-Lookup)
+   - `supabase/migrations/0002_stammdaten.sql` (Zutaten, Rezepte, Settings)
+   - `supabase/migrations/0003_plan.sql` (Plan, PlanMeal)
+   - `supabase/migrations/0004_shopping_inventory.sql` (Vorrat, Einkaufsliste, RPCs)
 
 4. BLS-Daten importieren
    ```bash
@@ -49,6 +53,7 @@ Doku: siehe [`SPEC.md`](./SPEC.md) und [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 - `npm run build` — Produktions-Build
 - `npm run start` — startet den Build
 - `npm run lint` — ESLint
+- `npm test` — Vitest (Domain-Logik, v.a. Generator)
 - `npm run bls:import` — BLS-Daten in Supabase importieren
 
 ## Stack

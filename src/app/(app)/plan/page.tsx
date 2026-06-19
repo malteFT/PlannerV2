@@ -142,6 +142,13 @@ export default function PlanPage() {
           variant="default"
           disabled={archive.isPending}
           onClick={() => {
+            if (
+              !window.confirm(
+                "Plan wirklich abschließen? Er wandert in die Historie.",
+              )
+            ) {
+              return;
+            }
             archive.mutate(plan.id, {
               onSuccess: () => toast.success("Plan archiviert."),
               onError: (e) =>
@@ -265,7 +272,9 @@ function MealRow({ meal, plan, recipes, settings }: MealRowProps) {
   );
   const [swapOpen, setSwapOpen] = React.useState(false);
 
+  // Sync Faktor-Eingabe wenn das Meal extern aktualisiert wird.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFactorDraft(String(Number(meal.serving_factor)));
   }, [meal.serving_factor]);
 
@@ -408,6 +417,7 @@ function MealRow({ meal, plan, recipes, settings }: MealRowProps) {
             <span>Gekocht</span>
             <Switch
               checked={meal.cooked}
+              disabled={toggleCooked.isPending}
               onCheckedChange={(checked) =>
                 toggleCooked.mutate(
                   { mealId: meal.id, cooked: checked },

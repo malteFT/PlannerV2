@@ -196,6 +196,7 @@ function InventoryRow({ item }: { item: InventoryItemWithIngredient }) {
 
   // Externe Updates (z.B. nach Refetch) übernehmen, wenn keine lokale Bearbeitung.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue(initial);
   }, [initial]);
 
@@ -330,7 +331,9 @@ function AddInventoryDialog({
   // Beim Öffnen zurücksetzen.
   React.useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIngredientId("");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAmount("");
     }
   }, [open]);

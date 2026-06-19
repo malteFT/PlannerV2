@@ -336,8 +336,11 @@ function AddManualDialog({ open, onOpenChange, planId }: AddManualDialogProps) {
   // Reset on open
   React.useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIngredientId("");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAmount("");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUnit("g");
     }
   }, [open]);

@@ -18,7 +18,6 @@
 
 import type {
   IngredientUnit,
-  IngredientWithBls,
   MealSlot,
   RecipeIngredientWithIngredient,
   RecipeWithIngredients,
