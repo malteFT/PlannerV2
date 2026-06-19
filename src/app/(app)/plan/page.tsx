@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Dices, Replace, Trash2, Save, Pencil, Check } from "lucide-react";
+import { Dices, Replace, Trash2, Save, Pencil, Check, Calendar } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   Dialog,
   DialogContent,
@@ -62,19 +64,30 @@ export default function PlanPage() {
 
   if (planQuery.isLoading) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-6">
         <Header editMode={false} onToggleEdit={() => {}} canEdit={false} />
-        <p className="text-muted-foreground">Lade Plan…</p>
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-2 py-4">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-20" />
+          </CardContent>
+        </Card>
+        <div className="space-y-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
       </div>
     );
   }
 
   if (!plan) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Header editMode={false} onToggleEdit={() => {}} canEdit={false} />
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
+          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
+            <Calendar className="size-8 text-muted-foreground" />
             <p className="text-muted-foreground">Noch kein aktiver Plan.</p>
             <Link
               href="/plan/generate"
@@ -103,14 +116,13 @@ export default function PlanPage() {
 
       {/* Tagesziel-Snapshot aus dem Plan selbst */}
       <Card>
-        <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-2 py-4">
+        <CardContent className="grid grid-cols-1 gap-4 py-4 md:grid-cols-2">
           <div>
             <p className="text-sm text-muted-foreground">Tagesziel</p>
             <p className="text-lg font-semibold">
               {formatKcal(plan.target_kcal_per_day)}
             </p>
           </div>
-          <Separator orientation="vertical" className="h-10" />
           <div>
             <p className="text-sm text-muted-foreground">Tage</p>
             <p className="text-lg font-semibold">{plan.day_count}</p>
@@ -179,37 +191,39 @@ function Header({
   canEdit: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-2">
-      <h1 className="text-2xl font-semibold tracking-tight">Plan</h1>
-      <div className="flex items-center gap-2">
-        {canEdit && (
-          <Button
-            variant={editMode ? "default" : "outline"}
-            size="sm"
-            onClick={onToggleEdit}
-            aria-pressed={editMode}
+    <PageHeader
+      title="Plan"
+      actions={
+        <>
+          {canEdit && (
+            <Button
+              variant={editMode ? "default" : "outline"}
+              size="sm"
+              onClick={onToggleEdit}
+              aria-pressed={editMode}
+            >
+              {editMode ? (
+                <>
+                  <Check className="mr-1 h-4 w-4" />
+                  Fertig
+                </>
+              ) : (
+                <>
+                  <Pencil className="mr-1 h-4 w-4" />
+                  Bearbeiten
+                </>
+              )}
+            </Button>
+          )}
+          <Link
+            href="/plan/generate"
+            className={buttonVariants({ variant: "outline" })}
           >
-            {editMode ? (
-              <>
-                <Check className="mr-1 h-4 w-4" />
-                Fertig
-              </>
-            ) : (
-              <>
-                <Pencil className="mr-1 h-4 w-4" />
-                Bearbeiten
-              </>
-            )}
-          </Button>
-        )}
-        <Link
-          href="/plan/generate"
-          className={buttonVariants({ variant: "outline" })}
-        >
-          Neuen Plan generieren
-        </Link>
-      </div>
-    </div>
+            Neuen Plan generieren
+          </Link>
+        </>
+      }
+    />
   );
 }
 
@@ -436,7 +450,7 @@ function MealRow({ meal, plan, recipes, settings, editMode }: MealRowProps) {
   }
 
   return (
-    <div className="rounded-md border p-3">
+    <div className={`rounded-md border p-3 transition-colors ${meal.cooked ? "is-done" : ""}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

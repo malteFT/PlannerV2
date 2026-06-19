@@ -39,7 +39,10 @@ export function Field<TValues extends FieldValues, TName extends FieldPath<TValu
       render={({ field, fieldState }) => (
         <div className={cn("flex flex-col gap-2", className)}>
           {label && (
-            <Label htmlFor={String(name)} className="text-sm">
+            <Label
+              htmlFor={String(name)}
+              className="text-sm font-medium text-foreground"
+            >
               {label}
             </Label>
           )}
@@ -52,11 +55,11 @@ export function Field<TValues extends FieldValues, TName extends FieldPath<TValu
             invalid: !!fieldState.error,
             error: fieldState.error?.message as string | undefined,
           })}
-          {description && (
+          {description && !fieldState.error?.message && (
             <p className="text-xs text-muted-foreground">{description}</p>
           )}
           {fieldState.error?.message && (
-            <p className="text-xs text-red-600" role="alert">
+            <p className="text-xs text-destructive" role="alert">
               {fieldState.error.message as string}
             </p>
           )}
@@ -72,7 +75,7 @@ export function Field<TValues extends FieldValues, TName extends FieldPath<TValu
 export function FormError({ message }: { message?: string | null }) {
   if (!message) return null;
   return (
-    <p className="text-sm text-red-600" role="alert">
+    <p className="text-sm text-destructive" role="alert">
       {message}
     </p>
   );

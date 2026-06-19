@@ -1,12 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Package, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   Dialog,
   DialogClose,
@@ -104,16 +107,16 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Vorrat</h1>
-          <p className="text-muted-foreground">Was du zu Hause hast.</p>
-        </div>
-        <Button onClick={() => setAddOpen(true)}>
-          <Plus />
-          Hinzufügen
-        </Button>
-      </div>
+      <PageHeader
+        title="Vorrat"
+        description="Was du zu Hause hast."
+        actions={
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus />
+            Hinzufügen
+          </Button>
+        }
+      />
 
       <Input
         type="search"
@@ -125,11 +128,15 @@ export default function InventoryPage() {
       />
 
       {inventory.isLoading && (
-        <p className="text-sm text-muted-foreground">Lade…</p>
+        <div className="space-y-2">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+        </div>
       )}
 
       {inventory.isError && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-destructive">
           Fehler:{" "}
           {inventory.error instanceof Error
             ? inventory.error.message
@@ -138,16 +145,21 @@ export default function InventoryPage() {
       )}
 
       {isEmpty && (
-        <p className="text-sm text-muted-foreground">
-          Noch nichts im Vorrat. Hake Einkaufslisten-Items ab oder füge manuell
-          hinzu.
-        </p>
+        <Card className="items-center justify-center px-6 py-10 text-center">
+          <Package className="mx-auto size-8 text-muted-foreground" />
+          <p className="mt-3 text-sm text-muted-foreground">
+            Noch nichts im Vorrat. Hake Einkaufslisten-Items ab oder füge
+            manuell hinzu.
+          </p>
+        </Card>
       )}
 
       {!isEmpty && grouped.length === 0 && !inventory.isLoading && (
-        <p className="text-sm text-muted-foreground">
-          Keine Treffer für „{search}“.
-        </p>
+        <Card className="items-center justify-center px-6 py-10 text-center">
+          <p className="text-sm text-muted-foreground">
+            Keine Treffer für „{search}“.
+          </p>
+        </Card>
       )}
 
       {grouped.length > 0 && (
@@ -157,11 +169,13 @@ export default function InventoryPage() {
               <h2 className="text-sm font-medium text-muted-foreground">
                 {cat}
               </h2>
-              <ul className="divide-y rounded-xl ring-1 ring-foreground/10">
-                {rows.map((it) => (
-                  <InventoryRow key={it.ingredient_id} item={it} />
-                ))}
-              </ul>
+              <Card className="p-0">
+                <ul className="divide-y divide-border">
+                  {rows.map((it) => (
+                    <InventoryRow key={it.ingredient_id} item={it} />
+                  ))}
+                </ul>
+              </Card>
             </section>
           ))}
         </div>
@@ -240,12 +254,12 @@ function InventoryRow({ item }: { item: InventoryItemWithIngredient }) {
   };
 
   return (
-    <li className="flex items-center gap-3 px-4 py-3">
-      <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-        <span className="font-medium truncate">
+    <li className="flex items-center gap-3 px-4 py-3 transition-colors">
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="truncate font-medium">
           {item.ingredient.display_name}
         </span>
-        <span className="text-xs text-muted-foreground truncate">
+        <span className="truncate text-xs text-muted-foreground">
           {item.ingredient.bls?.name_de ?? "—"}
         </span>
       </div>
@@ -266,7 +280,7 @@ function InventoryRow({ item }: { item: InventoryItemWithIngredient }) {
           aria-label={`Menge ${item.ingredient.display_name}`}
           className="w-24 text-right"
         />
-        <span className="text-sm text-muted-foreground w-10">
+        <span className="w-10 text-sm text-muted-foreground">
           {UNIT_LABELS[unit]}
         </span>
       </div>
@@ -386,7 +400,11 @@ function AddInventoryDialog({
           <div className="flex flex-col gap-2">
             <Label>Zutat</Label>
             {ingredientsQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">Lade Zutaten…</p>
+              <div className="space-y-2">
+                <Skeleton className="h-9 w-full" />
+                <Skeleton className="h-9 w-full" />
+                <Skeleton className="h-9 w-full" />
+              </div>
             ) : available.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 Alle Zutaten sind bereits im Vorrat.

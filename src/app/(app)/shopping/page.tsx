@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +39,6 @@ import {
 } from "@/lib/queries/shopping";
 import { useIngredients } from "@/lib/queries/ingredients";
 import {
-  ALL_UNITS,
   UNIT_LABELS,
   type IngredientUnit,
   type ShoppingListItemWithIngredient,
@@ -101,53 +103,71 @@ export default function ShoppingPage() {
 
   if (planLoading) {
     return (
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Einkauf</h1>
-        <p className="text-sm text-muted-foreground">Lädt…</p>
+      <div className="space-y-6">
+        <PageHeader title="Einkauf" />
+        <div className="space-y-2">
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+        </div>
       </div>
     );
   }
 
   if (!plan) {
     return (
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Einkauf</h1>
-        <p className="text-sm text-muted-foreground">
-          Kein aktiver Plan — generiere zuerst einen unter /plan.
-        </p>
+      <div className="space-y-6">
+        <PageHeader
+          title="Einkauf"
+          description="Kein aktiver Plan — generiere zuerst einen unter /plan."
+        />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Einkauf</h1>
-        <Button onClick={() => setAddOpen(true)}>
-          <Plus className="mr-1 size-4" />
-          Manuell hinzufügen
-        </Button>
-      </div>
+      <PageHeader
+        title="Einkauf"
+        actions={
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="mr-1 size-4" />
+            Manuell hinzufügen
+          </Button>
+        }
+      />
 
       {itemsLoading ? (
-        <p className="text-sm text-muted-foreground">Lädt…</p>
+        <div className="space-y-2">
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+        </div>
       ) : (items ?? []).length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Nichts auf der Einkaufsliste — du hast alles im Vorrat.
-        </p>
+        <Card className="items-center justify-center px-6 py-10 text-center">
+          <CheckCircle2 className="mx-auto size-8 text-primary" />
+          <p className="mt-3 text-sm text-muted-foreground">
+            Nichts auf der Einkaufsliste — du hast alles im Vorrat.
+          </p>
+        </Card>
       ) : (
         <>
           {/* Zu kaufen */}
           <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">Zu kaufen</h2>
+              <h2 className="text-sm font-medium text-muted-foreground">
+                Zu kaufen
+              </h2>
               <Badge variant="secondary">{toBuy.length}</Badge>
             </div>
 
             {toBuy.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Alles erledigt.
-              </p>
+              <Card className="items-center justify-center px-6 py-10 text-center">
+                <CheckCircle2 className="mx-auto size-8 text-primary" />
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Alles erledigt.
+                </p>
+              </Card>
             ) : (
               <div className="space-y-5">
                 {sortedCategories.map((cat) => {
@@ -157,11 +177,13 @@ export default function ShoppingPage() {
                       <h3 className="text-sm font-medium text-muted-foreground">
                         {cat}
                       </h3>
-                      <ul className="space-y-1 rounded-md border">
-                        {rows.map((item) => (
-                          <ToBuyRow key={item.id} item={item} />
-                        ))}
-                      </ul>
+                      <Card className="p-0">
+                        <ul className="divide-y divide-border">
+                          {rows.map((item) => (
+                            <ToBuyRow key={item.id} item={item} />
+                          ))}
+                        </ul>
+                      </Card>
                     </div>
                   );
                 })}
@@ -176,7 +198,7 @@ export default function ShoppingPage() {
             <button
               type="button"
               onClick={() => setDoneOpen((s) => !s)}
-              className="flex items-center gap-2 text-lg font-semibold"
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {doneOpen ? (
                 <ChevronDown className="size-4" />
@@ -188,15 +210,17 @@ export default function ShoppingPage() {
             </button>
 
             {doneOpen && (
-              <ul className="space-y-1 rounded-md border">
-                {done.length === 0 ? (
-                  <li className="p-3 text-sm text-muted-foreground">
-                    Noch nichts erledigt.
-                  </li>
-                ) : (
-                  done.map((item) => <DoneRow key={item.id} item={item} />)
-                )}
-              </ul>
+              <Card className="p-0">
+                <ul className="divide-y divide-border">
+                  {done.length === 0 ? (
+                    <li className="p-3 text-sm text-muted-foreground">
+                      Noch nichts erledigt.
+                    </li>
+                  ) : (
+                    done.map((item) => <DoneRow key={item.id} item={item} />)
+                  )}
+                </ul>
+              </Card>
             )}
           </section>
         </>
@@ -242,7 +266,7 @@ function ToBuyRow({ item }: { item: ShoppingListItemWithIngredient }) {
   };
 
   return (
-    <li className="flex items-center gap-3 px-3 py-2">
+    <li className="flex items-center gap-3 px-3 py-2 transition-all duration-150 ease-out">
       <Checkbox
         checked={false}
         onCheckedChange={(v) => {
@@ -292,13 +316,13 @@ function DoneRow({ item }: { item: ShoppingListItemWithIngredient }) {
   };
 
   return (
-    <li className="flex items-center gap-3 px-3 py-2">
+    <li className="is-done flex items-center gap-3 px-3 py-2 transition-all duration-150 ease-out">
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="truncate text-sm font-medium text-muted-foreground line-through">
+          <span className="truncate text-sm font-medium">
             {item.ingredient.display_name}
           </span>
-          <span className="text-sm tabular-nums text-muted-foreground line-through">
+          <span className="text-sm tabular-nums">
             {formatAmount(item.to_buy_amount, item.unit)}
           </span>
         </div>

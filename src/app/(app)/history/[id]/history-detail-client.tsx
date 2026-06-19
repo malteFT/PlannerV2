@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layout/page-header";
 
 import { usePlan } from "@/lib/queries/plans";
 import { macrosForMeal, formatKcal, formatGrams } from "@/lib/domain/nutrition";
@@ -47,11 +49,21 @@ export function HistoryDetailClient({ id }: { id: string }) {
   const query = usePlan(id);
 
   if (query.isLoading) {
-    return <p className="text-sm text-muted-foreground">Lade…</p>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-24 w-full" />
+        <div className="space-y-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </div>
+    );
   }
   if (query.isError) {
     return (
-      <p className="text-sm text-red-600">
+      <p className="text-sm text-destructive">
         Fehler:{" "}
         {query.error instanceof Error ? query.error.message : "Unbekannt"}
       </p>
@@ -64,27 +76,27 @@ export function HistoryDetailClient({ id }: { id: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            render={<Link href="/history" />}
-          >
-            <ChevronLeft />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {plan.name ?? `Plan vom ${formatDate(plan.activated_at ?? plan.created_at)}`}
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Aktiv: {formatDateTime(plan.activated_at)} — Archiviert:{" "}
-              {formatDateTime(plan.archived_at)}
-            </p>
-          </div>
-        </div>
-        <Badge variant="secondary">{plan.day_count} Tage</Badge>
-      </div>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              render={<Link href="/history" />}
+            >
+              <ChevronLeft />
+            </Button>
+            {plan.name ?? `Plan vom ${formatDate(plan.activated_at ?? plan.created_at)}`}
+          </span>
+        }
+        description={
+          <>
+            Aktiv: {formatDateTime(plan.activated_at)} — Archiviert:{" "}
+            {formatDateTime(plan.archived_at)}
+          </>
+        }
+        actions={<Badge variant="secondary">{plan.day_count} Tage</Badge>}
+      />
 
       <Card>
         <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-2 py-4">
@@ -141,7 +153,7 @@ export function HistoryDetailClient({ id }: { id: string }) {
                   return (
                     <div
                       key={m.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-input p-2"
+                      className={`flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 transition-colors ${m.cooked ? "is-done" : ""}`}
                     >
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">

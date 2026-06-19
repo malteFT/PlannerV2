@@ -5,10 +5,8 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "./nav-items";
 import { cn } from "@/lib/utils";
 
-// Auf dem Handy zeigen wir die Kern-Items in einer Bottom-Bar.
-// Plan, Einkauf, Vorrat, Rezepte, Settings — Zutaten und Historie liegen
-// im Sidebar-Bereich und werden auf Mobile via Settings-Bereich oder die
-// Plan-Aktion erreicht.
+// Mobile-Bottom-Nav: nur die fünf Kern-Items (Plan/Einkauf/Vorrat/Rezepte/Settings).
+// Zutaten + Historie bleiben über Settings/Plan-Pfade erreichbar.
 const MOBILE_PRIORITY = new Set([
   "/plan",
   "/shopping",
@@ -22,25 +20,36 @@ export function BottomNav() {
   const items = NAV_ITEMS.filter((i) => MOBILE_PRIORITY.has(i.href));
 
   return (
-    <nav className="md:hidden sticky bottom-0 z-10 grid grid-cols-5 border-t bg-card">
-      {items.map(({ href, label, icon: Icon }) => {
-        const active = pathname.startsWith(href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              "flex flex-col items-center justify-center gap-1 py-2 text-xs transition-colors",
-              active
-                ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Icon className="size-5" aria-hidden />
-            <span>{label}</span>
-          </Link>
-        );
-      })}
+    <nav
+      aria-label="Hauptnavigation"
+      className={cn(
+        "md:hidden fixed inset-x-0 bottom-0 z-40 border-t bg-card",
+        "safe-bottom",
+      )}
+    >
+      <ul className="grid grid-cols-5">
+        {items.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
+          return (
+            <li key={href}>
+              <Link
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "touch-target flex flex-col items-center justify-center gap-1 px-2 py-2 text-[11px] font-medium",
+                  "transition-colors duration-150 ease-out",
+                  active
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Icon className="size-[22px]" aria-hidden />
+                <span>{label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }

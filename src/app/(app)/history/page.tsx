@@ -6,6 +6,8 @@ import { Calendar } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layout/page-header";
 import { useArchivedPlans } from "@/lib/queries/plans";
 
 function formatDate(iso: string | null): string {
@@ -28,19 +30,21 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Historie</h1>
-        <p className="text-muted-foreground">
-          Frühere Pläne (archiviert).
-        </p>
-      </div>
+      <PageHeader
+        title="Historie"
+        description="Frühere Pläne (archiviert)."
+      />
 
       {query.isLoading && (
-        <p className="text-sm text-muted-foreground">Lade Historie…</p>
+        <div className="space-y-3">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+        </div>
       )}
 
       {query.isError && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-destructive">
           Fehler:{" "}
           {query.error instanceof Error ? query.error.message : "Unbekannt"}
         </p>
@@ -48,7 +52,7 @@ export default function HistoryPage() {
 
       {!query.isLoading && !query.isError && plans.length === 0 && (
         <Card>
-          <CardContent className="flex flex-col items-center gap-2 py-10 text-center text-muted-foreground">
+          <CardContent className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
             <Calendar className="size-8" />
             <p>Noch keine archivierten Pläne.</p>
           </CardContent>
@@ -58,8 +62,12 @@ export default function HistoryPage() {
       {plans.length > 0 && (
         <div className="space-y-3">
           {plans.map((p) => (
-            <Link key={p.id} href={`/history/${p.id}`} className="block">
-              <Card className="hover:bg-accent/30">
+            <Link
+              key={p.id}
+              href={`/history/${p.id}`}
+              className="card-interactive block rounded-lg"
+            >
+              <Card>
                 <CardHeader className="flex flex-row items-center justify-between gap-2">
                   <div className="space-y-1">
                     <CardTitle className="text-base">

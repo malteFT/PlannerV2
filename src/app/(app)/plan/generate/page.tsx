@@ -34,6 +34,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   Card,
   CardContent,
@@ -77,6 +78,15 @@ function generateErrorMessage(err: GenerateError): string {
     return "Keine Rezepte verfügbar. Bitte zuerst Rezepte anlegen.";
   }
   return `Keine passenden Rezepte für ${MEAL_SLOT_LABELS[err.mealSlot]} an Tag ${err.dayIndex + 1}.`;
+}
+
+/**
+ * Erzeugt einen frischen Seed pro Reroll/Generate-Klick.
+ * Außerhalb der Komponente, damit der React-Compiler Math.random nicht
+ * im Render-Pfad sieht.
+ */
+function makeRerollSeed(): number {
+  return Math.floor(Math.random() * 1e9);
 }
 
 // =========================================================================
@@ -171,7 +181,7 @@ export default function PlanGeneratePage() {
     if (!meals || !planSettings) return;
     // Pro Klick neuer Seed, sonst landet jeder Klick in derselben deterministischen
     // Rangfolge und der User würde nur zwischen 2 Rezepten wechseln.
-    const rerollSeed = Math.floor(Math.random() * 1e9);
+    const rerollSeed = makeRerollSeed();
     const result = rerollMeal({
       dayCount: planDayLabels.length,
       mealSlots: planSettings.meal_slots,
@@ -281,12 +291,14 @@ export default function PlanGeneratePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" render={<Link href="/plan" />} aria-label="Zurück">
-          <ArrowLeft />
-        </Button>
-        <h1 className="text-2xl font-semibold tracking-tight">Plan generieren</h1>
-      </div>
+      <PageHeader
+        title="Plan generieren"
+        actions={
+          <Button variant="ghost" size="icon-sm" render={<Link href="/plan" />} aria-label="Zurück">
+            <ArrowLeft />
+          </Button>
+        }
+      />
 
       {/* Konfiguration */}
       <Card>
@@ -294,42 +306,48 @@ export default function PlanGeneratePage() {
           <CardTitle>Konfiguration</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="day_count">Anzahl Tage</Label>
-            <Input
-              id="day_count"
-              type="number"
-              min={1}
-              max={31}
-              value={Number.isFinite(dayCount) ? String(dayCount) : ""}
-              onChange={(e) => {
-                const raw = e.target.value;
-                if (raw === "") {
-                  setDayCount(0);
-                  return;
-                }
-                const n = Number(raw);
-                if (!Number.isFinite(n)) return;
-                setDayCount(Math.max(1, Math.min(31, Math.floor(n))));
-              }}
-              className="w-32"
-            />
-          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="day_count">Anzahl Tage</Label>
+              <Input
+                id="day_count"
+                type="number"
+                min={1}
+                max={31}
+                value={Number.isFinite(dayCount) ? String(dayCount) : ""}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  if (raw === "") {
+                    setDayCount(0);
+                    return;
+                  }
+                  const n = Number(raw);
+                  if (!Number.isFinite(n)) return;
+                  setDayCount(Math.max(1, Math.min(31, Math.floor(n))));
+                }}
+                className="w-32"
+              />
+            </div>
 
-          <div className="flex flex-col gap-2">
-            <Label>Tages-Beschriftung</Label>
-            <Select
-              value={labelPreset}
-              onValueChange={(v) => setLabelPreset(v as LabelPreset)}
-            >
-              <SelectTrigger className="w-64">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="numeric">Tag 1, Tag 2, …</SelectItem>
-                <SelectItem value="weekday">Mo, Di, Mi, …</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col gap-2">
+              <Label>Tages-Beschriftung</Label>
+              <Select
+                value={labelPreset}
+                onValueChange={(v) => setLabelPreset(v as LabelPreset)}
+              >
+                <SelectTrigger className="w-64">
+                  <SelectValue>
+                    {(v) =>
+                      v === "numeric" ? "Tag 1, Tag 2, …" : "Mo, Di, Mi, …"
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="numeric">Tag 1, Tag 2, …</SelectItem>
+                  <SelectItem value="weekday">Mo, Di, Mi, …</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="pt-2">
@@ -369,7 +387,7 @@ export default function PlanGeneratePage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="grid grid-cols-3 gap-2 rounded-lg border border-input bg-muted/30 p-2 text-xs sm:grid-cols-3">
+                  <div className="grid grid-cols-3 gap-2 rounded-md border bg-muted/30 p-2 text-xs sm:grid-cols-3">
                     <div>
                       <span className="text-muted-foreground">Protein: </span>
                       <span className="font-medium">{formatGrams(aggregate.protein)}</span>
@@ -397,7 +415,7 @@ export default function PlanGeneratePage() {
                       return (
                         <div
                           key={`${meal.dayIndex}-${meal.mealSlot}`}
-                          className="flex flex-col gap-2 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between"
+                          className="flex flex-col gap-2 rounded-md border p-3 transition-colors sm:flex-row sm:items-center sm:justify-between"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="text-xs text-muted-foreground">

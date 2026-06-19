@@ -25,9 +25,12 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>Anmelden</CardTitle>
+    <Card className="w-full max-w-sm shadow-sm">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-xl">Anmelden</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Mit deiner E-Mail und Passwort.
+        </p>
       </CardHeader>
       <CardContent>
         <form action={handleSubmit} className="flex flex-col gap-4">
@@ -41,6 +44,7 @@ export function LoginForm() {
               required
               autoComplete="email"
               disabled={isPending}
+              className="h-11"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -52,14 +56,15 @@ export function LoginForm() {
               required
               autoComplete="current-password"
               disabled={isPending}
+              className="h-11"
             />
           </div>
           {error && (
-            <p className="text-sm text-red-600" role="alert">
+            <p className="text-sm text-destructive" role="alert">
               {error}
             </p>
           )}
-          <Button type="submit" disabled={isPending} className="w-full">
+          <Button type="submit" disabled={isPending} className="w-full h-11">
             {isPending ? "Anmelden…" : "Anmelden"}
           </Button>
         </form>

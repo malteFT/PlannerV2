@@ -17,6 +17,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { IngredientForm } from "@/components/ingredient/ingredient-form";
+import { PageHeader } from "@/components/layout/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useDeleteIngredient,
   useIngredient,
@@ -42,11 +44,28 @@ export function IngredientEditClient({ id }: { id: string }) {
   const [blockedOpen, setBlockedOpen] = React.useState(false);
 
   if (ingredient.isLoading) {
-    return <p className="text-sm text-muted-foreground">Lade…</p>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <Card>
+          <CardContent className="space-y-3 py-6">
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-1/2" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="space-y-3 py-6">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
   if (ingredient.isError) {
     return (
-      <p className="text-sm text-red-600">
+      <p className="text-sm text-destructive">
         Fehler:{" "}
         {ingredient.error instanceof Error
           ? ingredient.error.message
@@ -97,28 +116,30 @@ export function IngredientEditClient({ id }: { id: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            render={<Link href="/ingredients" />}
-          >
-            <ChevronLeft />
-          </Button>
-          <h1 className="text-2xl font-semibold tracking-tight">
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              render={<Link href="/ingredients" />}
+            >
+              <ChevronLeft />
+            </Button>
             Zutat bearbeiten
-          </h1>
-        </div>
-        <Button
-          variant="destructive"
-          onClick={onDeleteClick}
-          disabled={usage.isLoading || del.isPending}
-        >
-          <Trash2 />
-          Löschen
-        </Button>
-      </div>
+          </span>
+        }
+        actions={
+          <Button
+            variant="destructive"
+            onClick={onDeleteClick}
+            disabled={usage.isLoading || del.isPending}
+          >
+            <Trash2 />
+            Löschen
+          </Button>
+        }
+      />
 
       <IngredientForm
         defaultValues={defaults}

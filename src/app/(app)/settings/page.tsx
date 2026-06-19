@@ -29,6 +29,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Field } from "@/components/forms/field";
 import { preventEnterSubmit } from "@/components/forms/keyboard";
+import { PageHeader } from "@/components/layout/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DEFAULT_VALUES: UserSettingsFormInput = {
   target_kcal_per_day: 2000,
@@ -227,16 +229,27 @@ export default function SettingsPage() {
     settingsQuery.isLoading;
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">
-          Globales Profil — Energie, Makros, Mahlzeiten, Ausschluss.
-        </p>
-      </div>
+    <div className="space-y-6 max-w-2xl pb-20 sm:pb-0">
+      <PageHeader
+        title="Settings"
+        description="Globales Profil — Energie, Makros, Mahlzeiten, Ausschluss."
+      />
 
       {settingsQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Lade Einstellungen…</p>
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-5 w-48" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-9 w-full" />
+                <Skeleton className="h-9 w-full" />
+                <Skeleton className="h-4 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -350,7 +363,7 @@ export default function SettingsPage() {
                 className={
                   macroSumOk
                     ? "text-sm text-muted-foreground"
-                    : "text-sm text-red-600"
+                    : "text-sm text-destructive"
                 }
                 role={macroSumOk ? undefined : "alert"}
               >
@@ -438,7 +451,7 @@ export default function SettingsPage() {
                 className={
                   slotSumOk && slotLengthOk
                     ? "text-sm text-muted-foreground"
-                    : "text-sm text-red-600"
+                    : "text-sm text-destructive"
                 }
                 role={slotSumOk && slotLengthOk ? undefined : "alert"}
               >
@@ -559,12 +572,12 @@ export default function SettingsPage() {
           </Card>
 
           {/* Submit */}
-          <div className="flex items-center gap-3">
+          <div className="sticky bottom-16 z-10 -mx-4 flex items-center gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
             <Button type="submit" disabled={submitDisabled}>
               {updateMutation.isPending ? "Speichere…" : "Speichern"}
             </Button>
             {(!macroSumOk || !slotSumOk || !slotLengthOk) && (
-              <span className="text-xs text-red-600" role="alert">
+              <span className="text-xs text-destructive" role="alert">
                 Bitte Prozentsummen korrigieren.
               </span>
             )}

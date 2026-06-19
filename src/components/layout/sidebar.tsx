@@ -9,25 +9,33 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:w-60 shrink-0 flex-col border-r bg-card">
-      <div className="px-6 py-5 text-lg font-semibold tracking-tight">
-        Planner
+    <aside className="hidden md:flex md:w-64 shrink-0 flex-col border-r bg-sidebar">
+      <div className="px-6 py-6">
+        <span className="text-base font-semibold tracking-tight">Planner</span>
       </div>
-      <nav className="flex flex-col gap-1 px-3">
+      <nav className="flex flex-col gap-1 px-3 pb-6">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = pathname.startsWith(href);
+          const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
               href={href}
+              aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                "transition-colors duration-150 ease-out",
                 active
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
               )}
             >
-              <Icon className="size-4" aria-hidden />
+              <Icon
+                className={cn(
+                  "size-[18px] shrink-0",
+                  active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+                )}
+                aria-hidden
+              />
               <span>{label}</span>
             </Link>
           );
