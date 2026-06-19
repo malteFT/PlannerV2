@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "./nav-items";
 import { cn } from "@/lib/utils";
 
-// Mobile-Bottom-Nav: nur die fünf Kern-Items (Plan/Einkauf/Vorrat/Rezepte/Settings).
-// Zutaten + Historie bleiben über Settings/Plan-Pfade erreichbar.
+// Mobile-Bottom-Nav: alle Kern-Items (6).
+// Historie ist über Plan → "Plan abschließen" zugänglich; alles andere direkt.
 const MOBILE_PRIORITY = new Set([
   "/plan",
   "/shopping",
   "/inventory",
   "/recipes",
+  "/ingredients",
   "/settings",
 ]);
 
@@ -27,7 +28,7 @@ export function BottomNav() {
         "safe-bottom",
       )}
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {items.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
@@ -36,15 +37,15 @@ export function BottomNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "touch-target flex flex-col items-center justify-center gap-1 px-2 py-2 text-[11px] font-medium",
+                  "touch-target flex flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-medium",
                   "transition-colors duration-150 ease-out",
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="size-[22px]" aria-hidden />
-                <span>{label}</span>
+                <Icon className="size-[20px]" aria-hidden />
+                <span className="leading-tight">{label}</span>
               </Link>
             </li>
           );
