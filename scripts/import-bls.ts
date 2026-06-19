@@ -11,14 +11,17 @@
  *
  * Aufruf:  npm run bls:import
  */
-import "dotenv/config";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { config as loadEnv } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// .env.local explizit laden (Next.js-Konvention, dotenv lädt sie sonst nicht)
+loadEnv({ path: path.resolve(__dirname, "..", ".env.local") });
 
 const XLSX_PATH = path.resolve(
   __dirname,
