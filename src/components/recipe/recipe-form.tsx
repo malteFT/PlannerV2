@@ -71,7 +71,6 @@ export function RecipeForm({ defaultValues, onSubmit, submitLabel }: Props) {
   });
   const {
     control,
-    register,
     handleSubmit,
     watch,
     setValue,
@@ -163,11 +162,19 @@ export function RecipeForm({ defaultValues, onSubmit, submitLabel }: Props) {
                 min={1}
                 step={1}
                 value={
-                  f.value === undefined || f.value === null
-                    ? ""
-                    : String(f.value)
+                  typeof f.value === "number" && Number.isFinite(f.value)
+                    ? String(f.value)
+                    : ""
                 }
-                onChange={(e) => f.onChange(e.target.value)}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  if (raw === "") {
+                    f.onChange(0);
+                  } else {
+                    const n = Number(raw);
+                    f.onChange(Number.isFinite(n) ? n : 0);
+                  }
+                }}
                 onBlur={f.onBlur}
                 aria-invalid={f.invalid}
               />
@@ -333,14 +340,39 @@ export function RecipeForm({ defaultValues, onSubmit, submitLabel }: Props) {
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="flex flex-col gap-1">
-                      <Input
-                        type="number"
-                        min={0}
-                        step="any"
-                        placeholder="Menge"
-                        className="w-24"
-                        aria-invalid={!!errors.ingredients?.[index]?.amount}
-                        {...register(`ingredients.${index}.amount`)}
+                      <Controller
+                        control={control}
+                        name={`ingredients.${index}.amount`}
+                        render={({ field: f }) => (
+                          <Input
+                            type="number"
+                            min={0}
+                            step="any"
+                            placeholder="Menge"
+                            className="w-24"
+                            aria-invalid={
+                              !!errors.ingredients?.[index]?.amount
+                            }
+                            value={
+                              typeof f.value === "number" &&
+                              Number.isFinite(f.value)
+                                ? String(f.value)
+                                : ""
+                            }
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") {
+                                // 0 statt undefined, weil Schema number erwartet;
+                                // .positive() flagged es dann sauber als Fehler
+                                f.onChange(0);
+                              } else {
+                                const n = Number(raw);
+                                f.onChange(Number.isFinite(n) ? n : 0);
+                              }
+                            }}
+                            onBlur={f.onBlur}
+                          />
+                        )}
                       />
                       {errors.ingredients?.[index]?.amount?.message && (
                         <p className="text-xs text-red-600" role="alert">

@@ -57,6 +57,35 @@ function distributeEqually(count: number): number[] {
   return arr;
 }
 
+/**
+ * Default-Anteile pro Mahlzeit. Wenn die aktuelle Slot-Auswahl genau einer
+ * dieser Konfigurationen entspricht, nehmen wir den definierten Default —
+ * sonst gleichmäßig verteilen.
+ */
+const DEFAULT_DISTRIBUTIONS: ReadonlyArray<{
+  slots: ReadonlyArray<MealSlot>;
+  pct: ReadonlyArray<number>;
+}> = [
+  { slots: ["breakfast", "lunch", "dinner"], pct: [30, 40, 30] },
+  { slots: ["breakfast", "lunch", "dinner", "snack"], pct: [25, 35, 30, 10] },
+  { slots: ["breakfast", "lunch"], pct: [40, 60] },
+  { slots: ["lunch", "dinner"], pct: [55, 45] },
+  { slots: ["breakfast", "dinner"], pct: [40, 60] },
+  { slots: ["lunch"], pct: [100] },
+  { slots: ["dinner"], pct: [100] },
+  { slots: ["breakfast"], pct: [100] },
+  { slots: ["snack"], pct: [100] },
+];
+
+function distributionFor(slots: MealSlot[]): number[] {
+  const match = DEFAULT_DISTRIBUTIONS.find(
+    (d) =>
+      d.slots.length === slots.length &&
+      d.slots.every((s, i) => s === slots[i]),
+  );
+  return match ? [...match.pct] : distributeEqually(slots.length);
+}
+
 export default function SettingsPage() {
   const settingsQuery = useSettings();
   const updateMutation = useUpdateSettings();
@@ -144,7 +173,7 @@ export default function SettingsPage() {
         return;
       }
     }
-    const nextPct = distributeEqually(next.length);
+    const nextPct = distributionFor(next);
     form.setValue("meal_slots", next, { shouldValidate: true, shouldDirty: true });
     form.setValue("meal_slot_pct", nextPct, {
       shouldValidate: true,
@@ -470,33 +499,53 @@ export default function SettingsPage() {
                   </div>
                 )}
 
-                <div className="relative">
-                  <Input
-                    placeholder="Zutat suchen…"
-                    value={ingredientSearch}
-                    onChange={(e) => {
-                      setIngredientSearch(e.target.value);
-                      setShowDropdown(true);
-                    }}
-                    onFocus={() => setShowDropdown(true)}
-                    onBlur={() =>
-                      // Delay so click on a dropdown item still registers.
-                      setTimeout(() => setShowDropdown(false), 150)
-                    }
-                  />
-                  {showDropdown && dropdownCandidates.length > 0 && (
-                    <div className="absolute z-10 mt-1 w-full rounded-md border border-input bg-popover text-popover-foreground shadow-md max-h-60 overflow-auto">
-                      {dropdownCandidates.map((i) => (
-                        <button
-                          key={i.id}
-                          type="button"
-                          onClick={() => addExcluded(i.id)}
-                          className="flex w-full items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-muted text-left"
-                        >
-                          <span>{i.display_name}</span>
-                          <Plus className="size-3.5 text-muted-foreground" />
-                        </button>
-                      ))}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Zutat suchen…"
+                      value={ingredientSearch}
+                      onChange={(e) => {
+                        setIngredientSearch(e.target.value);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={() => setShowDropdown(true)}
+                      aria-label="Auszuschließende Zutat suchen"
+                    />
+                    {showDropdown && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setShowDropdown(false);
+                          setIngredientSearch("");
+                        }}
+                      >
+                        Schließen
+                      </Button>
+                    )}
+                  </div>
+                  {showDropdown && (
+                    <div className="rounded-md border border-input bg-card max-h-60 overflow-auto">
+                      {dropdownCandidates.length === 0 ? (
+                        <p className="px-3 py-2 text-sm text-muted-foreground">
+                          {allIngredients.length === 0
+                            ? "Noch keine Zutaten angelegt."
+                            : "Keine Treffer."}
+                        </p>
+                      ) : (
+                        dropdownCandidates.map((i) => (
+                          <button
+                            key={i.id}
+                            type="button"
+                            onClick={() => addExcluded(i.id)}
+                            className="flex w-full items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-muted text-left"
+                          >
+                            <span>{i.display_name}</span>
+                            <Plus className="size-3.5 text-muted-foreground" />
+                          </button>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
