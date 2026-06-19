@@ -85,6 +85,7 @@ export function IngredientEditClient({ id }: { id: string }) {
     grams_per_piece: data.grams_per_piece,
     category: data.category as IngredientCategory,
     excluded: data.excluded,
+    aliases: data.aliases ?? [],
   };
 
   async function handleSubmit(values: IngredientFormValues) {

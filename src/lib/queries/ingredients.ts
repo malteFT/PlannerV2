@@ -7,7 +7,7 @@ import type { Ingredient, IngredientWithBls } from "@/lib/db/types";
 import type { IngredientFormValues } from "@/lib/validators";
 
 const SELECT_INGREDIENT_WITH_BLS = `
-  id,user_id,display_name,bls_code,default_unit,grams_per_piece,category,excluded,created_at,updated_at,
+  id,user_id,display_name,bls_code,default_unit,grams_per_piece,category,excluded,aliases,created_at,updated_at,
   bls:bls_food!inner(bls_code,name_de,kcal_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g)
 `;
 
@@ -16,16 +16,25 @@ export function useIngredients(search?: string) {
     queryKey: qk.ingredients(search),
     queryFn: async (): Promise<IngredientWithBls[]> => {
       const supabase = createSupabaseBrowserClient();
-      let q = supabase
+      // Wir holen IMMER alle (User-eigenen) Zutaten und filtern client-seitig
+      // — das ist konsistent mit der Picker-Suche (display_name + aliases)
+      // und einfacher als ein Multi-Spalten-OR mit ilike auf Array-Items.
+      // Bei Single-User mit ~50-200 Zutaten ist das Datenvolumen unkritisch.
+      const { data, error } = await supabase
         .from("ingredient")
         .select(SELECT_INGREDIENT_WITH_BLS)
         .order("display_name", { ascending: true });
-      if (search && search.trim()) {
-        q = q.ilike("display_name", `%${search.trim()}%`);
-      }
-      const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as unknown as IngredientWithBls[];
+      const all = (data ?? []) as unknown as IngredientWithBls[];
+      const term = search?.trim().toLowerCase();
+      if (!term) return all;
+      return all.filter((i) => {
+        if (i.display_name.toLowerCase().includes(term)) return true;
+        for (const a of i.aliases ?? []) {
+          if (a.toLowerCase().includes(term)) return true;
+        }
+        return false;
+      });
     },
   });
 }
@@ -84,6 +93,7 @@ export function useCreateIngredient() {
           values.default_unit === "piece" ? values.grams_per_piece ?? null : null,
         category: values.category,
         excluded: values.excluded ?? false,
+        aliases: normalizeAliases(values.aliases ?? []),
       };
       const { data, error } = await supabase
         .from("ingredient")
@@ -112,6 +122,7 @@ export function useUpdateIngredient(id: string) {
           values.default_unit === "piece" ? values.grams_per_piece ?? null : null,
         category: values.category,
         excluded: values.excluded ?? false,
+        aliases: normalizeAliases(values.aliases ?? []),
       };
       const { data, error } = await supabase
         .from("ingredient")
@@ -142,4 +153,22 @@ export function useDeleteIngredient() {
       qc.invalidateQueries({ queryKey: ["ingredients"] });
     },
   });
+}
+
+/**
+ * Normalisiert Aliase: trim, leere entfernen, Duplikate (case-insensitive)
+ * entfernen, Reihenfolge erhalten.
+ */
+export function normalizeAliases(input: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of input) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(trimmed);
+  }
+  return out;
 }

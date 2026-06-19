@@ -80,6 +80,8 @@ export type Ingredient = {
   grams_per_piece: number | null;
   category: string;
   excluded: boolean;
+  /** Alternative Namen / Synonyme (case-insensitive Suche). */
+  aliases: string[];
   created_at: string;
   updated_at: string;
 };

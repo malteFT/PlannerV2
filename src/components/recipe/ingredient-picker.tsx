@@ -3,6 +3,10 @@
 import * as React from "react";
 import { useIngredients } from "@/lib/queries/ingredients";
 import type { IngredientUnit } from "@/lib/db/types";
+import {
+  ingredientMatchesQuery,
+  ingredientRelevanceBucket,
+} from "@/lib/domain/ingredient-search";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -26,15 +30,30 @@ export function IngredientPicker({ value, onChange, excludeIds }: Props) {
   const showPicker = open || !value;
 
   const filtered = React.useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return ingredients.filter((i) => {
+    const matches = ingredients.filter((i) => {
       if (excludeIds?.includes(i.id)) return false;
-      if (!q) return true;
-      return i.display_name.toLowerCase().includes(q);
+      return ingredientMatchesQuery(i, search);
+    });
+    if (search.trim() === "") {
+      // Ohne Suche: alphabetisch.
+      return [...matches].sort((a, b) =>
+        a.display_name.localeCompare(b.display_name, "de"),
+      );
+    }
+    // Mit Suche: nach Relevanz (Prefix → Wort-Prefix → Substring),
+    // innerhalb gleichem Bucket alphabetisch.
+    return [...matches].sort((a, b) => {
+      const ba = ingredientRelevanceBucket(a, search);
+      const bb = ingredientRelevanceBucket(b, search);
+      if (ba !== bb) return ba - bb;
+      return a.display_name.localeCompare(b.display_name, "de");
     });
   }, [ingredients, search, excludeIds]);
 
   if (!showPicker && selected) {
+    // Wenn die ausgewählte Zutat einen Alias hat, der vom display_name
+    // abweicht, ist es hilfreich kurz zu zeigen — aber bei eindeutigen
+    // Zutaten wäre das Lärm. Wir lassen es bei display_name.
     return (
       <div className="flex items-center justify-between gap-2 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm">
         <span className="truncate">{selected.display_name}</span>
@@ -53,7 +72,7 @@ export function IngredientPicker({ value, onChange, excludeIds }: Props) {
   return (
     <div className="flex flex-col gap-1 rounded-lg border border-input p-2">
       <Input
-        placeholder="Zutat suchen…"
+        placeholder="Zutat suchen (auch Synonyme)…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         autoFocus
@@ -67,24 +86,58 @@ export function IngredientPicker({ value, onChange, excludeIds }: Props) {
           </p>
         ) : (
           <ul className="flex flex-col">
-            {filtered.map((i) => (
-              <li key={i.id}>
-                <button
-                  type="button"
-                  className="w-full rounded-md px-2 py-1 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => {
-                    onChange(i.id, { defaultUnit: i.default_unit });
-                    setSearch("");
-                    setOpen(false);
-                  }}
-                >
-                  {i.display_name}
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    {i.category}
-                  </span>
-                </button>
-              </li>
-            ))}
+            {filtered.map((i) => {
+              // Wenn ein Alias den Treffer ausgelöst hat, zeigen wir ihn
+              // hinter dem Namen an, damit der User versteht, warum die
+              // Zutat erscheint. Wir wählen den Alias mit dem besten
+              // Bucket (Prefix > Wort-Prefix > Substring), nicht den ersten.
+              const q = search.trim().toLowerCase();
+              let matchedAlias: string | null = null;
+              if (q !== "" && !i.display_name.toLowerCase().includes(q)) {
+                let bestBucket = 3;
+                for (const a of i.aliases ?? []) {
+                  const lower = a.toLowerCase();
+                  let bucket: number;
+                  if (lower.startsWith(q)) bucket = 0;
+                  else if (
+                    lower
+                      .split(/[\s,/\-]+/)
+                      .filter(Boolean)
+                      .some((tok) => tok.startsWith(q))
+                  )
+                    bucket = 1;
+                  else if (lower.includes(q)) bucket = 2;
+                  else bucket = 3;
+                  if (bucket < bestBucket) {
+                    bestBucket = bucket;
+                    matchedAlias = a;
+                  }
+                }
+              }
+              return (
+                <li key={i.id}>
+                  <button
+                    type="button"
+                    className="w-full rounded-md px-2 py-1 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => {
+                      onChange(i.id, { defaultUnit: i.default_unit });
+                      setSearch("");
+                      setOpen(false);
+                    }}
+                  >
+                    <span className="font-medium">{i.display_name}</span>
+                    {matchedAlias && (
+                      <span className="ml-1 text-xs italic text-muted-foreground">
+                        (auch „{matchedAlias}“)
+                      </span>
+                    )}
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      {i.category}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

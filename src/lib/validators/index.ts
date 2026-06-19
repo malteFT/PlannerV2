@@ -48,6 +48,17 @@ export const ingredientFormSchema = z
       .optional(),
     category: categoryEnum,
     excluded: z.boolean(),
+    /**
+     * Synonyme zur Zutat. Werden in der Zutat-Suche im Rezept-Editor
+     * zusätzlich zu display_name durchsucht.
+     *
+     * Im Form als kommagetrennter String eingegeben → wird vor dem
+     * Submit zu einem getrimten, lowercase-normalisierten Array.
+     */
+    aliases: z
+      .array(trimmedString.min(1).max(100, "Synonym ist zu lang"))
+      .max(50, "Höchstens 50 Synonyme pro Zutat")
+      .default([]),
   })
   .refine(
     (v) =>
