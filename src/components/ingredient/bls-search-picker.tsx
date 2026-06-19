@@ -60,7 +60,10 @@ export function BlsSearchPicker({ value, onChange, invalid }: Props) {
   const showBadge = !!value && term.trim().length === 0;
   const showResults = debounced.trim().length >= 2;
 
-  const items = (search.data ?? []).slice(0, 8);
+  // Mehr Treffer im Picker zeigen, jetzt wo das Ranking Prefix-Treffer
+  // bevorzugt — sonst rutschen wichtige Einträge bei mehrdeutigen Suchen
+  // (z.B. "Dinkel" → 42 Treffer im BLS) immer noch unter den Tisch.
+  const items = (search.data ?? []).slice(0, 15);
 
   return (
     <div className="flex flex-col gap-2">
