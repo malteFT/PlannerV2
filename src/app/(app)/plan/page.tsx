@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Dices, Replace, Trash2, Save } from "lucide-react";
+import { Dices, Replace, Trash2, Save, Pencil, Check } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,11 +58,12 @@ export default function PlanPage() {
   const archive = useArchivePlan();
 
   const plan = planQuery.data ?? null;
+  const [editMode, setEditMode] = React.useState(false);
 
   if (planQuery.isLoading) {
     return (
       <div className="space-y-2">
-        <Header />
+        <Header editMode={false} onToggleEdit={() => {}} canEdit={false} />
         <p className="text-muted-foreground">Lade Plan…</p>
       </div>
     );
@@ -71,7 +72,7 @@ export default function PlanPage() {
   if (!plan) {
     return (
       <div className="space-y-4">
-        <Header />
+        <Header editMode={false} onToggleEdit={() => {}} canEdit={false} />
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
             <p className="text-muted-foreground">Noch kein aktiver Plan.</p>
@@ -94,7 +95,11 @@ export default function PlanPage() {
 
   return (
     <div className="space-y-6">
-      <Header />
+      <Header
+        editMode={editMode}
+        onToggleEdit={() => setEditMode((v) => !v)}
+        canEdit={true}
+      />
 
       {/* Tagesziel-Snapshot aus dem Plan selbst */}
       <Card>
@@ -132,6 +137,7 @@ export default function PlanPage() {
               plan={plan}
               recipes={recipes}
               settings={settings}
+              editMode={editMode}
             />
           );
         })}
@@ -163,16 +169,46 @@ export default function PlanPage() {
   );
 }
 
-function Header() {
+function Header({
+  editMode,
+  onToggleEdit,
+  canEdit,
+}: {
+  editMode: boolean;
+  onToggleEdit: () => void;
+  canEdit: boolean;
+}) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-2">
       <h1 className="text-2xl font-semibold tracking-tight">Plan</h1>
-      <Link
-        href="/plan/generate"
-        className={buttonVariants({ variant: "outline" })}
-      >
-        Neuen Plan generieren
-      </Link>
+      <div className="flex items-center gap-2">
+        {canEdit && (
+          <Button
+            variant={editMode ? "default" : "outline"}
+            size="sm"
+            onClick={onToggleEdit}
+            aria-pressed={editMode}
+          >
+            {editMode ? (
+              <>
+                <Check className="mr-1 h-4 w-4" />
+                Fertig
+              </>
+            ) : (
+              <>
+                <Pencil className="mr-1 h-4 w-4" />
+                Bearbeiten
+              </>
+            )}
+          </Button>
+        )}
+        <Link
+          href="/plan/generate"
+          className={buttonVariants({ variant: "outline" })}
+        >
+          Neuen Plan generieren
+        </Link>
+      </div>
     </div>
   );
 }
@@ -193,6 +229,7 @@ type DayCardProps = {
   plan: PlanWithMeals;
   recipes: RecipeWithIngredients[];
   settings: UserSettings | null;
+  editMode: boolean;
 };
 
 function DayCard(props: DayCardProps) {
@@ -207,6 +244,7 @@ function DayCard(props: DayCardProps) {
     plan,
     recipes,
     settings,
+    editMode,
   } = props;
 
   const diff = aggregateKcal - targetKcal;
@@ -238,6 +276,7 @@ function DayCard(props: DayCardProps) {
             plan={plan}
             recipes={recipes}
             settings={settings}
+            editMode={editMode}
           />
         ))}
         {meals.length === 0 && (
@@ -259,9 +298,10 @@ type MealRowProps = {
   plan: PlanWithMeals;
   recipes: RecipeWithIngredients[];
   settings: UserSettings | null;
+  editMode: boolean;
 };
 
-function MealRow({ meal, plan, recipes, settings }: MealRowProps) {
+function MealRow({ meal, plan, recipes, settings, editMode }: MealRowProps) {
   const toggleCooked = useToggleMealCooked();
   const updateMeal = useUpdatePlanMeal();
   const deleteMeal = useDeletePlanMeal();
@@ -436,42 +476,46 @@ function MealRow({ meal, plan, recipes, settings }: MealRowProps) {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleReroll}
-          disabled={updateMeal.isPending}
-        >
-          <Dices className="mr-1 h-4 w-4" />
-          Würfeln
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setSwapOpen(true)}
-        >
-          <Replace className="mr-1 h-4 w-4" />
-          Tauschen
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setFactorOpen((v) => !v)}
-        >
-          Faktor anpassen
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleDelete}
-          disabled={deleteMeal.isPending}
-        >
-          <Trash2 className="mr-1 h-4 w-4" />
-          Löschen
-        </Button>
+        {editMode && (
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleReroll}
+              disabled={updateMeal.isPending}
+            >
+              <Dices className="mr-1 h-4 w-4" />
+              Würfeln
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSwapOpen(true)}
+            >
+              <Replace className="mr-1 h-4 w-4" />
+              Tauschen
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setFactorOpen((v) => !v)}
+            >
+              Faktor anpassen
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleDelete}
+              disabled={deleteMeal.isPending}
+            >
+              <Trash2 className="mr-1 h-4 w-4" />
+              Löschen
+            </Button>
+          </>
+        )}
       </div>
 
-      {factorOpen && (
+      {editMode && factorOpen && (
         <div className="mt-3 flex items-end gap-2">
           <div className="flex flex-col gap-1">
             <Label htmlFor={`factor-${meal.id}`} className="text-xs">
