@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "./nav-items";
 import { cn } from "@/lib/utils";
 
-// Auf dem Handy zeigen wir nur die wichtigsten 5 Items in einer Bottom-Bar.
-// Alles weitere wandert hinter ein "Mehr"-Menü, sobald wir es brauchen — für
-// MVP belassen wir den Schnitt einfach: Plan / Einkauf / Vorrat / Rezepte / Settings.
+// Auf dem Handy zeigen wir die Kern-Items in einer Bottom-Bar.
+// Plan, Einkauf, Vorrat, Rezepte, Settings — Zutaten und Historie liegen
+// im Sidebar-Bereich und werden auf Mobile via Settings-Bereich oder die
+// Plan-Aktion erreicht.
 const MOBILE_PRIORITY = new Set([
   "/plan",
   "/shopping",
