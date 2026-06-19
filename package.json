@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "bls:import": "tsx scripts/import-bls.ts"
+    "bls:import": "tsx scripts/import-bls.ts",
+    "seed:ingredients": "tsx scripts/seed-ingredients.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
