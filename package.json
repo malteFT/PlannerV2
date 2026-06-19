@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "bls:import": "tsx scripts/import-bls.ts",
-    "seed:ingredients": "tsx scripts/seed-ingredients.ts"
+    "seed:ingredients": "tsx scripts/seed-ingredients.ts",
+    "seed:recipes": "tsx scripts/seed-recipes.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
