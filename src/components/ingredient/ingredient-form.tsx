@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Field } from "@/components/forms/field";
+import { preventEnterSubmit } from "@/components/forms/keyboard";
 import { BlsSearchPicker } from "@/components/ingredient/bls-search-picker";
 import {
   ALL_UNITS,
@@ -63,7 +64,7 @@ export function IngredientForm({ defaultValues, onSubmit, submitLabel }: Props) 
   });
 
   return (
-    <form onSubmit={handle} className="flex max-w-xl flex-col gap-4">
+    <form onSubmit={handle} onKeyDown={preventEnterSubmit} className="flex max-w-xl flex-col gap-4">
       <Field control={form.control} name="display_name" label="Name">
         {(f) => (
           <Input

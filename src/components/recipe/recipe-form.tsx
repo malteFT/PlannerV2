@@ -33,6 +33,7 @@ import {
 } from "@/lib/domain/nutrition";
 
 import { Field } from "@/components/forms/field";
+import { preventEnterSubmit } from "@/components/forms/keyboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,7 +64,7 @@ type Props = {
 const EMPTY_DEFAULTS: RecipeFormInput = {
   name: "",
   meal_types: [],
-  base_servings: 2,
+  base_servings: 1,
   instructions: "",
   suppressed: false,
   ingredients: [],
@@ -137,7 +138,7 @@ export function RecipeForm({ defaultValues, onSubmit, submitLabel }: Props) {
     .filter((id): id is string => !!id);
 
   return (
-    <form onSubmit={submit} className="space-y-6">
+    <form onSubmit={submit} onKeyDown={preventEnterSubmit} className="space-y-6">
       {/* Section: Allgemein */}
       <Card>
         <CardHeader>
@@ -160,6 +161,7 @@ export function RecipeForm({ defaultValues, onSubmit, submitLabel }: Props) {
             control={control}
             name="base_servings"
             label="Basisportionen"
+            description="Für wie viele Personen die unten angegebenen Mengen reichen. Die Nährwerte werden durch diesen Wert geteilt (Anzeige pro Portion)."
           >
             {(f) => (
               <Input

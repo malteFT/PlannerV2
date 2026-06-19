@@ -28,6 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Field } from "@/components/forms/field";
+import { preventEnterSubmit } from "@/components/forms/keyboard";
 
 const DEFAULT_VALUES: UserSettingsFormInput = {
   target_kcal_per_day: 2000,
@@ -237,7 +238,11 @@ export default function SettingsPage() {
       {settingsQuery.isLoading ? (
         <p className="text-sm text-muted-foreground">Lade Einstellungen…</p>
       ) : (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          onKeyDown={preventEnterSubmit}
+          className="space-y-6"
+        >
           {/* 1. Energieziel & Makros */}
           <Card>
             <CardHeader>
