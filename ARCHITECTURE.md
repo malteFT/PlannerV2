@@ -2,9 +2,176 @@
 
 Stand: 2026-06-19
 Bezug: SPEC.md (funktionale Spezifikation)
-Status: Entwurf, bereit für Phase 1
+Status: **As-built — siehe Block unten.** Original-Architekturentwurf erhalten,
+konkrete Abweichungen am Anfang dokumentiert.
 
 ---
+
+## As-built (Stand 2026-06-19)
+
+### Datenbank-Stand
+
+Migrationen, die in der Supabase-DB ausgeführt sein müssen (in dieser Reihenfolge):
+
+| Migration | Inhalt |
+|---|---|
+| `0001_init.sql` | `bls_food` + `pg_trgm` Index |
+| `0002_stammdaten.sql` | `ingredient`, `recipe`, `recipe_ingredient`, `user_settings` + RLS + Trigger |
+| `0003_plan.sql` | `plan`, `plan_meal`, `plan_status`-Enum, "max 1 active per user" |
+| `0004_shopping_inventory.sql` | `inventory_item`, `shopping_list_item`, RPCs `convert_to_default_unit`, `activate_plan`, `check_shopping_item`, `uncheck_shopping_item`, `mark_meal_cooked` (Erstversion) |
+| `0005_consolidated_fixes.sql` | `reaggregate_shopping_list`, `update_plan_meal`, `delete_plan_meal`, `mark_meal_cooked` Snapshot-basiert mit `cooked_subtractions jsonb`, Inventory-Trigger |
+| `0006_ingredient_aliases.sql` | `ingredient.aliases text[]` + GIN-Index |
+
+**Alle 0001-0006 sind in der Live-DB (`pjakqfcfrlpujjuivhjk.supabase.co`).**
+
+### Tatsächliche Datenmodell-Ergänzungen ggü. §3
+
+- `ingredient.aliases text[] not null default '{}'` — Synonym-Suche
+- `plan.meal_slots`, `plan.meal_slot_pct`, `plan.target_kcal_per_day`,
+  `plan.protein_pct`, `plan.carbs_pct`, `plan.fat_pct` — **Snapshot der
+  Settings beim Activate.** Ohne diese würde sich die Macro-Anzeige von
+  archivierten Plänen ändern, sobald der User Settings updatet.
+- `plan_meal.cooked_subtractions jsonb` — pro-Zutat-Snapshot für exaktes
+  Un-Cook (siehe Lessons unten).
+- `shopping_list_item.required_amount` und `to_buy_amount` getrennt — required
+  ist die volle Bedarfsmenge, to_buy ist max(0, required − inventory) zum
+  Aktivierungs-Zeitpunkt.
+
+### RPCs (alle in `0004` und `0005`)
+
+- **`activate_plan(p_plan_id uuid)`** — atomar: alten aktiven Plan archivieren,
+  Draft auf active, Einkaufsliste-Snapshot via `convert_to_default_unit` aus
+  `plan_meal × recipe_ingredient`, abzüglich `inventory_item`.
+- **`reaggregate_shopping_list(p_plan_id uuid)`** — neu rechnen nach Mahlzeit-
+  Mutation. Abgehakte oder manuelle Items unverändert. Nicht mehr benötigte
+  generierte Items werden gelöscht.
+- **`update_plan_meal(p_meal_id, p_recipe_id?, p_serving_factor?)`** — Update
+  + (bei aktivem Plan) Re-Aggregation.
+- **`delete_plan_meal(p_meal_id)`** — setzt `recipe_id=null`, hält Slot leer
+  (SPEC §6.4), triggert Re-Aggregation.
+- **`mark_meal_cooked(p_meal_id, p_cooked)`** — bei `true` Snapshot der zu
+  subtrahierenden Mengen in `cooked_subtractions`, Inventory minus.
+  Bei `false` aus Snapshot rekonstruieren (nicht aus aktuellem Rezept).
+- **`check_shopping_item` / `uncheck_shopping_item`** — Vorrat ±, atomar.
+- **Trigger `inventory_recompute_shopping`** — auf `inventory_item`, recomputed
+  `to_buy_amount` der nicht-abgehakten, nicht-manuellen Items für den aktiven
+  Plan.
+
+### Stack-Realität
+
+| Layer | Tatsächlich |
+|---|---|
+| Framework | Next.js 16.2.x App Router |
+| UI-Komponenten | shadcn/ui auf Tailwind v4. **shadcn-Form-Komponente nicht eingerichtet** (CLI-Bug mit Tailwind v4) — eigener Field-Wrapper unter `src/components/forms/field.tsx`. |
+| Auth | `@supabase/ssr` mit `proxy.ts` (Next 16 Konvention, **nicht** `middleware.ts`) |
+| Daten | TanStack Query v5, Hooks in `src/lib/queries/*` |
+| Forms | react-hook-form + zod, `useWatch` (nicht `form.watch`) bei `useFieldArray` |
+| Tests | vitest, 22 Tests in `__tests__/`-Ordnern |
+| Package-Manager | npm (User-Wahl, nicht pnpm wie ursprünglich vorgesehen) |
+
+### Lessons Learned (kritisch — nicht ignorieren)
+
+#### 1. `process.env.NEXT_PUBLIC_*` IMMER statisch zugreifen
+
+```ts
+// FALSCH (dynamischer Index — Webpack inlinet nicht):
+function readEnv(name: string) { return process.env[name]; }
+
+// RICHTIG:
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+```
+
+Bei Vercel (Webpack) sind dynamisch indexierte Reads im Browser-Bundle
+`undefined`. Lokal mit Turbopack funktioniert beides — daher Bug erst in
+Production sichtbar. Hat uns Stunden Debugging gekostet. Siehe
+`src/lib/supabase/env.ts`.
+
+#### 2. `proxy.ts`, nicht `middleware.ts`
+
+In Next 16 ist `middleware` deprecated und durch `proxy` ersetzt. Datei heißt
+`src/proxy.ts`, Funktion `proxy(request)`. Falls ein Tool oder Reviewer
+behauptet, das müsse `middleware.ts` heißen — nein, Doku gegen-checken.
+
+#### 3. `useWatch` statt `form.watch()` bei `useFieldArray`
+
+`form.watch("ingredients")` triggert kein Rerender, wenn Items via `append()`
+hinzukommen. Nutze:
+
+```ts
+const items = useWatch({ control: form.control, name: "ingredients" });
+```
+
+Pattern in `src/components/recipe/recipe-form.tsx`.
+
+#### 4. `z.coerce.number()` ist eine Falle für RHF-Generics
+
+Macht den Input-Typ `unknown` → kollidiert mit dem 3-Generic-Pattern von
+`useForm`. Stattdessen: `z.number()` plus String→Number-Konvertierung im
+`onChange` der Inputs. Siehe `src/lib/validators/index.ts`.
+
+#### 5. Cooked-Snapshot in `plan_meal`
+
+Beim ersten Wurf `mark_meal_cooked` haben wir die zu subtrahierenden Mengen
+zur Cook-Zeit aus dem aktuellen Rezept berechnet — Un-Cook ebenfalls. Wenn
+der User zwischen Cook und Un-Cook das Rezept tauscht oder den Faktor ändert,
+wird falsch zurückgebucht. Lösung: Snapshot in `plan_meal.cooked_subtractions`
+zur Cook-Zeit, Un-Cook nutzt diesen Snapshot.
+
+#### 6. BLS-Suche braucht Whitespace-Toleranz und Prefix-Ranking
+
+Naive `ilike '%term%' order by name_de limit 20` findet bei "Dinkel" 42 Treffer,
+"Dinkelteigwaren" landet auf Platz 27 → fehlt im Picker. Lösung: Limit auf 100
+fetchen, clientseitig nach Bucket sortieren (Prefix > Wort-Prefix > Substring),
+top 25 anzeigen. Plus: bei zusammengeschriebenem Term zweite Query mit Split
+("Hafer Flocken" als BLS-Eintrag, User tippt "Haferflocken").
+
+#### 7. Aliases-Suche hat eigenes Ranking
+
+`src/lib/domain/ingredient-search.ts` — analog zum BLS-Ranking, aber bester
+Bucket aus `display_name + alle aliases`. Beispiel: bei Suche "Penne" landet
+"Nudeln" (mit Alias "Penne") an Position 0, weil der Alias direkt mit "Penne"
+beginnt.
+
+### Vercel-Setup (live)
+
+- Project: `planner-v2-ten.vercel.app`
+- Region: **Washington (iad1)** — sollte auf **Frankfurt (fra1)** für Latenz
+  zur Supabase-Region eu-central-2 (Zürich)
+- Env-Variablen: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  (Production + Preview)
+- `SUPABASE_SERVICE_ROLE_KEY` ist **nicht** auf Vercel — ausschließlich lokal
+  in `.env.local` für Skripte (`bls:import`, `seed:ingredients`, `seed:recipes`)
+
+### Dateien, die für die Architektur-Schicht relevant sind
+
+- `src/lib/db/types.ts` — Domain-Typen (parallel zur DB gepflegt; bei Schema-
+  Änderung HIER und in Migration synchron updaten)
+- `src/lib/supabase/{env,client,server,proxy}.ts` — Auth-Wiring
+- `src/lib/domain/{generator,nutrition,ingredient-search}.ts` — pure Logik,
+  testbar in Isolation
+- `src/lib/queries/*.ts` — TanStack-Query-Hooks
+- `src/lib/validators/index.ts` — Zod-Schemas
+- `src/proxy.ts` — Next-16-Proxy mit Auth-Gate
+
+### Offene Punkte
+
+- **Vercel-Region** auf fra1 stellen (Settings → Functions → Region)
+- **Realtime aktivieren** für `plan`, `plan_meal`, `shopping_list_item`,
+  `inventory_item` (Phase-5-Polish, optional)
+- **Phase-3 Live-Test** — Re-Aggregation nach Mahlzeit-Tausch im aktiven Plan
+  ist nur Code-getestet, nicht durchgeklickt
+- **Backups in Supabase** — Pro-Tier nötig, aktuell Free
+- **Datenschutzerklärung** falls die App jemals öffentlich registrierbar wird
+
+---
+
+## Original-Architekturentwurf
+
+(Unverändert ab hier. Historischer Snapshot vom Phase-0-Setup. Gegenüber
+heute leicht überholt — der obige As-built-Block ist die Wahrheit.)
+
+---
+
 
 ## 1. Stack-Entscheidungen
 

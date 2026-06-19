@@ -1,9 +1,110 @@
 # Ernährungsplanner — Funktionale Spezifikation
 
 Stand: 2026-06-19
-Status: Entwurf, bereit für Architektur-Phase
+Status: **As-built — siehe Block unten.** Originalspezifikation erhalten als
+historischer Snapshot, Abweichungen am Ende dokumentiert.
 
 ---
+
+## As-built (Stand 2026-06-19)
+
+### Was tatsächlich gebaut ist
+
+**Alle Akzeptanzkriterien aus §11 sind erfüllt** (Login, BLS-Daten in DB, Zutaten-
+und Rezeptpflege mit Live-Nährwerten, Settings inkl. Edit-Modus für Mahlzeiten-
+Slots, Plan-Generator mit ±5 % Toleranz, Festlegen → Einkaufsliste, abhaken →
+Vorrat, Vorrat manuell pflegbar, Mahlzeit-Tausch im aktiven Plan aktualisiert
+die Einkaufsliste über `reaggregate_shopping_list`-RPC, Historie read-only,
+Sync zwischen Geräten via Refresh — Realtime nicht aktiviert).
+
+**Erweiterungen über die Original-Spezifikation hinaus:**
+
+1. **Aliases auf Zutaten** (`ingredient.aliases text[]`) — Synonyme, die im
+   Rezept-Editor und der Zutaten-Liste durchsucht werden. Beispiel: "Nudeln"
+   mit Aliasen ["Spaghetti", "Penne", "Pasta", "Makkaroni", "Fusilli"] —
+   Suche nach "Penne" findet "Nudeln". Migration `0006_ingredient_aliases.sql`.
+
+2. **BLS-Suche mit Whitespace-Toleranz** — "Haferflocken" findet "Hafer Flocken"
+   (BLS schreibt es auseinander). Plus Prefix-Ranking: "Dinkel" zeigt
+   "Dinkelteigwaren" weit oben statt auf Platz 27.
+
+3. **Plan-Snapshots der Settings** — `plan.target_kcal_per_day`,
+   `meal_slots`, `meal_slot_pct`, `protein_pct`, `carbs_pct`, `fat_pct`
+   werden beim Aktivieren in den Plan kopiert. Spätere Settings-Änderungen
+   beeinflussen aktive/archivierte Pläne nicht.
+
+4. **Cooked-Snapshot** (`plan_meal.cooked_subtractions jsonb`) — beim Cook-
+   Häkchen werden die tatsächlich subtrahierten Vorrats-Mengen pro Zutat
+   gespeichert. Un-Cook addiert exakt diese Werte zurück, auch wenn das
+   Rezept zwischenzeitlich getauscht wurde.
+
+5. **Edit-Modus auf der Plan-Seite** — Standardansicht zeigt nur Rezeptname/
+   Faktor/kcal/Cooked-Switch. Aktionen (Würfeln, Tauschen, Faktor anpassen,
+   Löschen) liegen hinter einem Stift-Toggle.
+
+6. **Mobile Bottom-Sheet "Mehr"** — die fünf Kern-Items (Plan, Einkauf,
+   Vorrat, Rezepte, Mehr) plus ein Drawer für Zutaten/Historie/Settings.
+
+7. **Seed-Skripte** — `npm run seed:ingredients` und `npm run seed:recipes`
+   parsen `seed-ingredients-proposal.md` / `seed-recipes-proposal.md` und
+   legen die Stammdaten idempotent an. Nutzbar für neue User später.
+
+8. **63 kuratierte Stammzutaten + 31 kuratierte Rezepte** sind im aktuellen
+   User-Account angelegt (Allesfresser-Profil, 1-Personen-Portionen).
+
+### Was bewusst nicht implementiert ist
+
+- **Realtime-Sync zwischen Geräten** — Supabase Realtime ist nicht aktiviert.
+  Refresh holt aktuellen Stand. Phase-5-Polish-Punkt, nicht akut nötig für
+  Single-User.
+- **Multi-User-Sharing eines Plans** — Datenmodell mit `user_id` und RLS
+  unterstützt es technisch, aber kein UI-Flow.
+- **Öffentliche Registrierung** — User werden manuell im Supabase-Dashboard
+  angelegt. Kein `/signup`-Flow in der App.
+- **Seed-Daten für neue User** — beim ersten Login eines neuen Users
+  passiert nichts. Wenn das später öffentlich gemacht werden soll, wird ein
+  `clone_seed_data_for_user`-Trigger nötig.
+- **Export / Druck des Plans** — bewusst weggelassen (SPEC §1 Nicht-Ziele).
+- **Allergie-Engine** — die Excluded-Ingredients-Funktion in Settings ersetzt
+  das pragmatisch.
+
+### Bekannte offene Punkte
+
+- **Live-Test der Re-Aggregation**: das Erzeugen der Einkaufsliste beim
+  Plan-Aktivieren ist live verifiziert. Der Pfad "Mahlzeit im **aktiven**
+  Plan tauschen → Einkaufsliste passt sich an" ist im Code (RPCs
+  `update_plan_meal` / `delete_plan_meal` rufen `reaggregate_shopping_list`)
+  und durch Migration 0005 in der DB, aber wir haben ihn nicht durchgeklickt.
+- **Vercel-Region**: läuft in Washington (iad1), Supabase in Zürich. Sollte
+  auf Frankfurt (fra1) gestellt werden für ~50–100 ms weniger Latenz.
+
+### Stand der Konversations-/Spec-Entscheidungen
+
+Die meisten Detailentscheidungen aus §1–§9 dieser Spec wurden so umgesetzt.
+Wo kleinere Abweichungen entstanden sind:
+
+- **§3 Auth**: nur Email/Passwort, kein Magic Link. User wird im Dashboard
+  angelegt.
+- **§4.3 Toleranz Default**: 5 % gemäß Spec.
+- **§4.4 Wiederholungs-Policy**: hartes "kein Doppel pro Tag", weiches
+  "minimieren über Plan" (Repeat-Penalty im Score). Keine harten Wiederholungs-
+  Limits über Tagesgrenze hinweg — User kann mehr Variation durch mehr
+  Rezepte erreichen.
+- **§6.4 Mahlzeit löschen**: Slot bleibt erhalten (`recipe_id = NULL`), wie
+  in der Spec beschrieben — implementiert in `delete_plan_meal`-RPC. UI für
+  "leerer Slot wieder befüllen" ist vorhanden über Tausch.
+- **§9 UI-Anspruch "modern"**: erfüllt durch Linear/Yazio-nahen Look mit
+  Inter-Font und Indigo-Akzent. Empty-States und Skeleton-Loader durchgängig.
+
+---
+
+## Originalspezifikation
+
+(Unverändert ab hier. Historischer Snapshot vom Phase-0-Setup; gegenüber
+heute leicht überholt — die obigen Erweiterungen sind die Wahrheit.)
+
+---
+
 
 ## 1. Ziel & Kontext
 
