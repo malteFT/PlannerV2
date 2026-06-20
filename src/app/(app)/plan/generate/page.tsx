@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/page-header";
+import { MealSlotChip } from "@/components/plan/meal-slot-chip";
 import {
   Card,
   CardContent,
@@ -418,8 +419,8 @@ export default function PlanGeneratePage() {
                           className="flex flex-col gap-2 rounded-md border p-3 transition-colors sm:flex-row sm:items-center sm:justify-between"
                         >
                           <div className="min-w-0 flex-1">
-                            <div className="text-xs text-muted-foreground">
-                              {MEAL_SLOT_LABELS[meal.mealSlot]}
+                            <div className="mb-1">
+                              <MealSlotChip slot={meal.mealSlot} />
                             </div>
                             <div className="truncate text-sm font-medium">
                               {recipe?.name ?? "Unbekanntes Rezept"}

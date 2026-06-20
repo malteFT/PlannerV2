@@ -22,7 +22,7 @@ export default async function AppLayout({
       <div className="flex flex-1 flex-col md:flex-row">
         <Sidebar />
         <div className="flex flex-1 flex-col">
-          <main className="flex-1 px-4 pt-6 pb-24 md:px-10 md:py-10 md:pb-10 max-w-5xl w-full mx-auto">
+          <main className="flex-1 px-4 pt-6 pb-20 md:px-10 md:py-10 md:pb-10 max-w-5xl w-full mx-auto">
             {children}
           </main>
           <BottomNav />

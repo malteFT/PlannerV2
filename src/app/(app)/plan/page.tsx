@@ -3,17 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Dices, Replace, Trash2, Save, Pencil, Check, Calendar } from "lucide-react";
+import { Dices, Replace, Trash2, Save, Pencil, Check, Calendar, Loader2 } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/layout/page-header";
+import { MealSlotChip } from "@/components/plan/meal-slot-chip";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,8 @@ import {
 import { macrosForMeal, macrosPerServing, formatKcal, formatGrams } from "@/lib/domain/nutrition";
 import {
   MEAL_SLOT_LABELS,
+  UNIT_LABELS,
+  type IngredientUnit,
   type MealSlot,
   type PlanMealWithRecipe,
   type PlanWithMeals,
@@ -115,17 +117,26 @@ export default function PlanPage() {
       />
 
       {/* Tagesziel-Snapshot aus dem Plan selbst */}
-      <Card>
-        <CardContent className="grid grid-cols-1 gap-4 py-4 md:grid-cols-2">
-          <div>
-            <p className="text-sm text-muted-foreground">Tagesziel</p>
-            <p className="text-lg font-semibold">
-              {formatKcal(plan.target_kcal_per_day)}
+      <Card className="shadow-card">
+        <CardContent className="grid grid-cols-2 divide-x divide-border py-4">
+          <div className="px-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Tagesziel
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {Math.round(plan.target_kcal_per_day).toLocaleString("de-DE")}
+              <span className="ml-1 text-sm font-normal text-muted-foreground">
+                kcal
+              </span>
             </p>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Tage</p>
-            <p className="text-lg font-semibold">{plan.day_count}</p>
+          <div className="px-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Tage
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-foreground">
+              {plan.day_count}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -217,7 +228,7 @@ function Header({
           )}
           <Link
             href="/plan/generate"
-            className={buttonVariants({ variant: "outline" })}
+            className={buttonVariants({ variant: "default" })}
           >
             Neuen Plan generieren
           </Link>
@@ -264,25 +275,26 @@ function DayCard(props: DayCardProps) {
   const diff = aggregateKcal - targetKcal;
 
   return (
-    <Card>
+    <Card className="shadow-card">
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="text-lg">{dayLabel}</CardTitle>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
+        <div className="space-y-2">
+          <CardTitle className="text-base font-semibold text-foreground">
+            {dayLabel}
+          </CardTitle>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             <Badge variant="secondary">{formatKcal(aggregateKcal)}</Badge>
             <span className="text-muted-foreground">
               Ziel {formatKcal(targetKcal)} ({diff >= 0 ? "+" : ""}
               {Math.round(diff)} kcal)
             </span>
-            <Separator orientation="vertical" className="h-4" />
-            <span className="text-muted-foreground">
-              P {formatGrams(aggregateProtein)} · KH {formatGrams(aggregateCarbs)} · F{" "}
-              {formatGrams(aggregateFat)}
-            </span>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            P {formatGrams(aggregateProtein)} · KH {formatGrams(aggregateCarbs)} · F{" "}
+            {formatGrams(aggregateFat)}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="p-0">
         {meals.map((meal) => (
           <MealRow
             key={meal.id}
@@ -294,7 +306,7 @@ function DayCard(props: DayCardProps) {
           />
         ))}
         {meals.length === 0 && (
-          <p className="text-sm text-muted-foreground">
+          <p className="px-4 py-3 text-sm text-muted-foreground">
             Keine Mahlzeiten an diesem Tag.
           </p>
         )}
@@ -325,6 +337,7 @@ function MealRow({ meal, plan, recipes, settings, editMode }: MealRowProps) {
     String(Number(meal.serving_factor)),
   );
   const [swapOpen, setSwapOpen] = React.useState(false);
+  const [detailOpen, setDetailOpen] = React.useState(false);
 
   // Sync Faktor-Eingabe wenn das Meal extern aktualisiert wird.
   React.useEffect(() => {
@@ -449,85 +462,183 @@ function MealRow({ meal, plan, recipes, settings, editMode }: MealRowProps) {
     });
   }
 
+  // Im Lesemodus ist die ganze Kachel klickbar und öffnet den Detail-Dialog.
+  // Im Edit-Mode ist sie nicht klickbar, damit die Action-Buttons (Würfeln,
+  // Tauschen, Faktor, Löschen) ohne Bubble-Konflikt funktionieren.
+  // Bei gelöschtem Rezept (recipe == null) gibt es nichts zu zeigen → nicht klickbar.
+  const clickable = !editMode && recipe != null;
+
+  // factorOpen darf nicht aus einem früheren Edit-Mode-Toggle hängen bleiben.
+  React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!editMode) setFactorOpen(false);
+  }, [editMode]);
+
+  function handleContainerClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (!clickable) return;
+    // Nur reagieren, wenn der Klick wirklich auf der Kachel selbst landet,
+    // nicht auf einem inneren Control (Cooked-Checkbox, Action-Buttons).
+    if (e.target !== e.currentTarget && !(e.target as HTMLElement).closest?.("[data-meal-target]")) {
+      // Ein Klick auf den Recipe-Namen / Slot-Badge / Subtext (alles im
+      // Text-Block mit data-meal-target) öffnet den Dialog. Klicks auf den
+      // Cooked-Block (data-stop-propagation) bzw. Action-Buttons bubbeln
+      // hierhin, sollen aber NICHT den Dialog öffnen.
+      return;
+    }
+    setDetailOpen(true);
+  }
+
+  function handleContainerKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!clickable) return;
+    // Nur Tastendrücke direkt auf dem Container behandeln, nicht aus Kindern.
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setDetailOpen(true);
+    }
+  }
+
+  // Sticky-Hover auf Touch-Geräten vermeiden: Hover-Effekte nur bei Geräten
+  // mit echtem Hover (Desktop/Maus), nicht bei Tap.
+  const clickableClasses = clickable
+    ? "cursor-pointer [@media(hover:hover)]:hover:bg-accent"
+    : "";
+  // Edit-Mode-Marker: kräftige linke Kante + Indigo-Tint, damit klar erkennbar.
+  // pl-3 statt der Default-px-4 kompensiert den 4px-Border, sodass der Inhalt
+  // nicht springt zwischen Lese- und Edit-Mode.
+  const editModeClasses = editMode
+    ? "border-l-4 border-l-primary bg-primary/8 pl-3"
+    : "";
+
   return (
-    <div className={`rounded-md border p-3 transition-colors ${meal.cooked ? "is-done" : ""}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline">{MEAL_SLOT_LABELS[meal.meal_slot]}</Badge>
-            {recipe ? (
-              <span className="font-medium">{recipe.name}</span>
-            ) : (
-              <span className="italic text-muted-foreground">
-                (Rezept gelöscht)
-              </span>
-            )}
+    <div
+      className={`group/meal relative border-b border-border last:border-0 px-4 py-3 transition-colors duration-150 ${clickableClasses} ${editModeClasses} ${meal.cooked ? "meal-cooked" : ""}`}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      aria-haspopup={clickable ? "dialog" : undefined}
+      aria-expanded={clickable ? detailOpen : undefined}
+      aria-label={
+        clickable && recipe
+          ? `Details zu ${MEAL_SLOT_LABELS[meal.meal_slot]}: ${recipe.name}, Faktor ${Number(meal.serving_factor).toFixed(2)}, ${formatKcal(kcal)}`
+          : undefined
+      }
+      onClick={clickable ? handleContainerClick : undefined}
+      onKeyDown={clickable ? handleContainerKeyDown : undefined}
+    >
+      <div className="flex items-center justify-between gap-3">
+        {/* Text-Block: Klicks darauf öffnen den Detail-Dialog. */}
+        <div className="meal-text min-w-0 flex-1" data-meal-target>
+          {/* Slot-Chip auf eigener Zeile über dem Rezeptnamen. */}
+          <div className="mb-1.5">
+            <MealSlotChip slot={meal.meal_slot} />
           </div>
-          <div className="mt-1 text-sm text-muted-foreground">
+          {recipe ? (
+            <p className="text-sm font-medium text-foreground">
+              {recipe.name}
+            </p>
+          ) : (
+            <p className="text-sm italic text-muted-foreground">
+              (Rezept gelöscht)
+            </p>
+          )}
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Faktor {Number(meal.serving_factor).toFixed(2)} ·{" "}
             {recipe ? formatKcal(kcal) : "—"}
-          </div>
+          </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          <Label className="flex items-center gap-2 text-sm">
-            <span>Gekocht</span>
-            <Switch
-              checked={meal.cooked}
-              disabled={toggleCooked.isPending}
-              onCheckedChange={(checked) =>
-                toggleCooked.mutate(
-                  { mealId: meal.id, cooked: checked },
-                  {
-                    onError: (e) =>
-                      toast.error(`Fehler: ${(e as Error).message ?? e}`),
-                  },
-                )
-              }
-            />
-          </Label>
-        </div>
+        {/* Cooked-Toggle als Kreis: gefüllt wenn aktiv, Outline wenn inaktiv.
+            role="switch" mit aria-checked, e.stopPropagation verhindert,
+            dass der Klick den Detail-Dialog öffnet. */}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={meal.cooked}
+          aria-label={
+            meal.cooked
+              ? `Als nicht gekocht markieren: ${MEAL_SLOT_LABELS[meal.meal_slot]}`
+              : `Als gekocht markieren: ${MEAL_SLOT_LABELS[meal.meal_slot]}`
+          }
+          aria-busy={toggleCooked.isPending || undefined}
+          disabled={toggleCooked.isPending}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleCooked.mutate(
+              { mealId: meal.id, cooked: !meal.cooked },
+              {
+                onError: (err) =>
+                  toast.error(`Fehler: ${(err as Error).message ?? err}`),
+              },
+            );
+          }}
+          onKeyDown={(e) => e.stopPropagation()}
+          className={cn(
+            "group/cooked flex shrink-0 flex-col items-center justify-center gap-1 rounded-lg transition-all duration-150 active:scale-[0.97]",
+            "min-w-[56px] min-h-[56px] px-2 py-1",
+          )}
+        >
+          <span
+            className={cn(
+              "flex size-8 items-center justify-center rounded-md transition-colors",
+              meal.cooked
+                ? "bg-primary/10 text-primary"
+                : "border border-border bg-card text-transparent group-hover/cooked:border-primary/40",
+            )}
+          >
+            {toggleCooked.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
+          </span>
+          <span
+            className={cn(
+              "text-[11px] font-medium",
+              meal.cooked ? "text-primary" : "text-muted-foreground",
+            )}
+          >
+            Gekocht
+          </span>
+        </button>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        {editMode && (
-          <>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleReroll}
-              disabled={updateMeal.isPending}
-            >
-              <Dices className="mr-1 h-4 w-4" />
-              Würfeln
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setSwapOpen(true)}
-            >
-              <Replace className="mr-1 h-4 w-4" />
-              Tauschen
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setFactorOpen((v) => !v)}
-            >
-              Faktor anpassen
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleDelete}
-              disabled={deleteMeal.isPending}
-            >
-              <Trash2 className="mr-1 h-4 w-4" />
-              Löschen
-            </Button>
-          </>
-        )}
-      </div>
+      {editMode && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleReroll}
+            disabled={updateMeal.isPending}
+          >
+            <Dices className="mr-1 h-4 w-4" />
+            Würfeln
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setSwapOpen(true)}
+          >
+            <Replace className="mr-1 h-4 w-4" />
+            Tauschen
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setFactorOpen((v) => !v)}
+          >
+            Faktor anpassen
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDelete}
+            disabled={deleteMeal.isPending}
+          >
+            <Trash2 className="mr-1 h-4 w-4" />
+            Löschen
+          </Button>
+        </div>
+      )}
 
       {editMode && factorOpen && (
         <div className="mt-3 flex items-end gap-2">
@@ -566,6 +677,16 @@ function MealRow({ meal, plan, recipes, settings, editMode }: MealRowProps) {
         excludedIngredientIds={settings?.excluded_ingredient_ids ?? []}
         onPick={handleSwap}
       />
+
+      {recipe && (
+        <RecipeDetailDialog
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          recipe={recipe}
+          servingFactor={Number(meal.serving_factor)}
+          mealSlot={meal.meal_slot}
+        />
+      )}
     </div>
   );
 }
@@ -658,6 +779,112 @@ function SwapDialog(props: SwapDialogProps) {
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Abbrechen
           </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// =========================================================================
+// Recipe Detail Dialog (Zubereitung + skalierte Zutaten + Makros)
+// =========================================================================
+
+type RecipeDetailDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  recipe: RecipeWithIngredients;
+  servingFactor: number;
+  mealSlot: MealSlot;
+};
+
+function formatScaledAmount(value: number, unit: IngredientUnit): string {
+  if (unit === "piece") {
+    const isWhole = Math.abs(value - Math.round(value)) < 1e-9;
+    const num = isWhole ? value.toFixed(0) : value.toFixed(1);
+    return `${num} ${UNIT_LABELS[unit]}`;
+  }
+  const isWhole = Math.abs(value - Math.round(value)) < 1e-9;
+  const num = isWhole ? value.toFixed(0) : value.toFixed(1);
+  return `${num} ${UNIT_LABELS[unit]}`;
+}
+
+function RecipeDetailDialog(props: RecipeDetailDialogProps) {
+  const { open, onOpenChange, recipe, servingFactor, mealSlot } = props;
+
+  const macros = macrosForMeal(
+    recipe.ingredients,
+    recipe.base_servings,
+    servingFactor,
+  );
+
+  const sortedIngredients = React.useMemo(
+    () => [...recipe.ingredients].sort((a, b) => a.position - b.position),
+    [recipe.ingredients],
+  );
+
+  const hasInstructions = recipe.instructions.trim().length > 0;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[85vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle>{recipe.name}</DialogTitle>
+          <DialogDescription>
+            {MEAL_SLOT_LABELS[mealSlot]} · Faktor {servingFactor.toFixed(2)}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 overflow-auto pr-1">
+          {/* Makros */}
+          <div className="rounded-md border p-3 text-sm">
+            <div className="font-medium">{formatKcal(macros.kcal)}</div>
+            <div className="mt-1 text-muted-foreground">
+              P {formatGrams(macros.protein)} · F {formatGrams(macros.fat)} · KH{" "}
+              {formatGrams(macros.carbs)}
+            </div>
+          </div>
+
+          {/* Zutaten */}
+          <section>
+            <h3 className="mb-2 text-sm font-medium">Zutaten</h3>
+            <ul className="space-y-1.5 text-sm">
+              {sortedIngredients.map((ri) => (
+                <li key={ri.ingredient_id} className="flex flex-col">
+                  <span>
+                    <span className="tabular-nums text-muted-foreground">
+                      {formatScaledAmount(ri.amount * servingFactor, ri.unit)}
+                    </span>{" "}
+                    <span>{ri.ingredient.display_name}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* Zubereitung */}
+          <section>
+            <h3 className="mb-2 text-sm font-medium">Zubereitung</h3>
+            {hasInstructions ? (
+              <p className="whitespace-pre-wrap text-sm">
+                {recipe.instructions}
+              </p>
+            ) : (
+              <p className="text-sm italic text-muted-foreground">
+                Keine Zubereitungsanleitung hinterlegt.
+              </p>
+            )}
+          </section>
+        </div>
+
+        <DialogFooter>
+          <Link
+            href={`/recipes/${recipe.id}`}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            <Pencil className="mr-1 h-4 w-4" />
+            Rezept bearbeiten
+          </Link>
+          <Button onClick={() => onOpenChange(false)}>Schließen</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

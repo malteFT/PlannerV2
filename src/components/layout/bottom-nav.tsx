@@ -36,24 +36,24 @@ export function BottomNav() {
       <nav
         aria-label="Hauptnavigation"
         className={cn(
-          "md:hidden fixed inset-x-0 bottom-0 z-40 border-t bg-card",
+          "md:hidden fixed inset-x-0 bottom-0 z-40 h-16 border-t border-border bg-card",
           "safe-bottom",
         )}
       >
-        <ul className="grid grid-cols-5">
+        <ul className="grid h-16 grid-cols-5 px-2 py-1">
           {primaryItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`);
             return (
-              <li key={href}>
+              <li key={href} className="flex">
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "touch-target flex flex-col items-center justify-center gap-1 px-2 py-2 text-[11px] font-medium",
+                    "touch-target flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[11px]",
                     "transition-colors duration-150 ease-out",
                     active
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : "font-medium text-muted-foreground hover:text-foreground",
                   )}
                 >
                   <Icon className="size-[22px]" aria-hidden />
@@ -62,18 +62,18 @@ export function BottomNav() {
               </li>
             );
           })}
-          <li>
+          <li className="flex">
             <button
               type="button"
               onClick={() => setMoreOpen(true)}
               aria-haspopup="dialog"
               aria-expanded={moreOpen}
               className={cn(
-                "touch-target flex w-full flex-col items-center justify-center gap-1 px-2 py-2 text-[11px] font-medium",
+                "touch-target flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[11px]",
                 "transition-colors duration-150 ease-out",
                 moreActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-primary/10 text-primary font-semibold"
+                  : "font-medium text-muted-foreground hover:text-foreground",
               )}
             >
               <MoreHorizontal className="size-[22px]" aria-hidden />

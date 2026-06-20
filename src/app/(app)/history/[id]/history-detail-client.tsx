@@ -10,10 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/layout/page-header";
+import { MealSlotChip } from "@/components/plan/meal-slot-chip";
 
 import { usePlan } from "@/lib/queries/plans";
 import { macrosForMeal, formatKcal, formatGrams } from "@/lib/domain/nutrition";
-import { MEAL_SLOT_LABELS } from "@/lib/db/types";
 
 function formatDateTime(iso: string | null): string {
   if (!iso) return "—";
@@ -156,9 +156,7 @@ export function HistoryDetailClient({ id }: { id: string }) {
                       className={`flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 transition-colors ${m.cooked ? "is-done" : ""}`}
                     >
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          {MEAL_SLOT_LABELS[m.meal_slot]}
-                        </Badge>
+                        <MealSlotChip slot={m.meal_slot} />
                         <span className="text-sm">{recipeName}</span>
                         <span className="text-xs text-muted-foreground">
                           ×{Number(m.serving_factor).toFixed(2)}

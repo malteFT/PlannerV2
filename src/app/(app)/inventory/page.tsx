@@ -169,7 +169,7 @@ export default function InventoryPage() {
               <h2 className="text-sm font-medium text-muted-foreground">
                 {cat}
               </h2>
-              <Card className="p-0">
+              <Card className="p-0 shadow-card">
                 <ul className="divide-y divide-border">
                   {rows.map((it) => (
                     <InventoryRow key={it.ingredient_id} item={it} />

@@ -67,7 +67,7 @@ export default function HistoryPage() {
               href={`/history/${p.id}`}
               className="card-interactive block rounded-lg"
             >
-              <Card>
+              <Card className="shadow-card">
                 <CardHeader className="flex flex-row items-center justify-between gap-2">
                   <div className="space-y-1">
                     <CardTitle className="text-base">

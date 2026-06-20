@@ -177,7 +177,7 @@ export default function ShoppingPage() {
                       <h3 className="text-sm font-medium text-muted-foreground">
                         {cat}
                       </h3>
-                      <Card className="p-0">
+                      <Card className="p-0 shadow-card">
                         <ul className="divide-y divide-border">
                           {rows.map((item) => (
                             <ToBuyRow key={item.id} item={item} />
@@ -210,7 +210,7 @@ export default function ShoppingPage() {
             </button>
 
             {doneOpen && (
-              <Card className="p-0">
+              <Card className="p-0 shadow-card">
                 <ul className="divide-y divide-border">
                   {done.length === 0 ? (
                     <li className="p-3 text-sm text-muted-foreground">

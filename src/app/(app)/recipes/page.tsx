@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { MealSlotChip } from "@/components/plan/meal-slot-chip";
 import {
   Select,
   SelectContent,
@@ -170,9 +171,7 @@ export default function RecipesPage() {
                   </div>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {r.meal_types.map((mt) => (
-                      <Badge key={mt} variant="outline">
-                        {MEAL_SLOT_LABELS[mt]}
-                      </Badge>
+                      <MealSlotChip key={mt} slot={mt} />
                     ))}
                   </div>
                 </div>

@@ -25,7 +25,7 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm shadow-sm">
+    <Card className="w-full max-w-sm shadow-card">
       <CardHeader className="space-y-1">
         <CardTitle className="text-xl">Anmelden</CardTitle>
         <p className="text-sm text-muted-foreground">

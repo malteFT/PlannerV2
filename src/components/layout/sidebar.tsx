@@ -9,7 +9,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:w-64 shrink-0 flex-col border-r bg-sidebar">
+    <aside className="hidden md:flex md:w-64 shrink-0 flex-col border-r border-border bg-card">
       <div className="px-6 py-6">
         <span className="text-base font-semibold tracking-tight">Planner</span>
       </div>
@@ -22,11 +22,11 @@ export function Sidebar() {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm",
                 "transition-colors duration-150 ease-out",
                 active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                  ? "bg-primary/10 text-primary font-semibold"
+                  : "font-medium text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               <Icon
