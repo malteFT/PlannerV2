@@ -127,9 +127,10 @@ export function IngredientEditClient({ id }: { id: string }) {
             >
               <ChevronLeft />
             </Button>
-            Zutat bearbeiten
+            <span className="truncate">{data.display_name}</span>
           </span>
         }
+        description="Zutat bearbeiten"
         actions={
           <Button
             variant="destructive"

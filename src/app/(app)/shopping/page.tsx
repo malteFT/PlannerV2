@@ -87,7 +87,9 @@ export default function ShoppingPage() {
   const [addOpen, setAddOpen] = React.useState(false);
 
   const toBuy = React.useMemo(
-    () => (items ?? []).filter((i) => !i.checked),
+    // Items mit to_buy_amount = 0 sind bereits aus dem Vorrat gedeckt und
+    // müssen nicht eingekauft werden — raus aus der "Zu kaufen"-Liste.
+    () => (items ?? []).filter((i) => !i.checked && i.to_buy_amount > 0),
     [items],
   );
   const done = React.useMemo(

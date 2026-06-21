@@ -11,9 +11,15 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
+        // Tab-Auto-Refresh: bei jedem Seitenwechsel und beim Zurückkehren
+        // zum Tab werden die Daten neu geholt. So sieht der User nach z.B.
+        // einer Zutaten-Mutation in einem anderen Tab/Subseite die Änderung
+        // beim Zurückwechseln ohne manuellen Reload.
         staleTime: 30_000,
         gcTime: 5 * 60_000,
-        refetchOnWindowFocus: false,
+        refetchOnMount: "always",
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
         retry: 1,
       },
       mutations: {
