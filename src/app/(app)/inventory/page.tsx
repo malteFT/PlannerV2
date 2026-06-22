@@ -19,13 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { IngredientPicker } from "@/components/ingredient/ingredient-picker";
 import {
   useInventory,
   useUpsertInventory,
@@ -410,21 +404,12 @@ function AddInventoryDialog({
                 Alle Zutaten sind bereits im Vorrat.
               </p>
             ) : (
-              <Select
-                value={ingredientId}
-                onValueChange={(v) => setIngredientId(v as string)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Zutat wählen…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {available.map((i) => (
-                    <SelectItem key={i.id} value={i.id}>
-                      {i.display_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <IngredientPicker
+                value={ingredientId || null}
+                onChange={(id) => setIngredientId(id ?? "")}
+                ingredients={available}
+                placeholder="Zutat suchen…"
+              />
             )}
           </div>
 

@@ -21,13 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { IngredientPicker } from "@/components/ingredient/ingredient-picker";
 
 import { useActivePlan } from "@/lib/queries/plans";
 import {
@@ -423,22 +417,13 @@ function AddManualDialog({ open, onOpenChange, planId }: AddManualDialogProps) {
         <div className="space-y-4">
           <div className="flex flex-col gap-2">
             <Label>Zutat</Label>
-            <Select
-              value={ingredientId}
-              onValueChange={handleIngredientChange}
+            <IngredientPicker
+              value={ingredientId || null}
+              onChange={handleIngredientChange}
+              ingredients={sortedIngredients}
+              placeholder="Zutat suchen…"
               disabled={isLoading}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Zutat wählen…" />
-              </SelectTrigger>
-              <SelectContent>
-                {sortedIngredients.map((ing) => (
-                  <SelectItem key={ing.id} value={ing.id}>
-                    {ing.display_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
           </div>
 
           <div className="flex flex-col gap-2">

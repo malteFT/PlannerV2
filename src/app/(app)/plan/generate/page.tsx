@@ -21,7 +21,7 @@ import {
   type GeneratedMeal,
   type GenerateError,
 } from "@/lib/domain/generator";
-import { formatGrams, formatKcal, macrosForMeal, macrosPerServing } from "@/lib/domain/nutrition";
+import { formatGrams, formatKcal, macrosForMeal, macrosPerServing, type Macros } from "@/lib/domain/nutrition";
 
 import { useSettings } from "@/lib/queries/settings";
 import { useRecipes } from "@/lib/queries/recipes";
@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/page-header";
 import { MealSlotChip } from "@/components/plan/meal-slot-chip";
+import { RecipeDetailDialog } from "@/components/plan/recipe-detail-dialog";
 import {
   Card,
   CardContent,
@@ -414,48 +415,21 @@ export default function PlanGeneratePage() {
                           )
                         : null;
                       return (
-                        <div
+                        <GeneratorMealCard
                           key={`${meal.dayIndex}-${meal.mealSlot}`}
-                          className="flex flex-col gap-2 rounded-md border p-3 transition-colors sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <div className="mb-1">
-                              <MealSlotChip slot={meal.mealSlot} />
-                            </div>
-                            <div className="truncate text-sm font-medium">
-                              {recipe?.name ?? "Unbekanntes Rezept"}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {meal.servingFactor.toFixed(2)}× Portion
-                              {macros ? ` · ${formatKcal(macros.kcal)}` : ""}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleReroll(meal.dayIndex, meal.mealSlot)}
-                            >
-                              <Dices />
-                              Würfeln
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                setSwapTarget({
-                                  dayIndex: meal.dayIndex,
-                                  mealSlot: meal.mealSlot,
-                                })
-                              }
-                            >
-                              <Replace />
-                              Tauschen
-                            </Button>
-                          </div>
-                        </div>
+                          meal={meal}
+                          recipe={recipe ?? null}
+                          macros={macros}
+                          onReroll={() =>
+                            handleReroll(meal.dayIndex, meal.mealSlot)
+                          }
+                          onSwap={() =>
+                            setSwapTarget({
+                              dayIndex: meal.dayIndex,
+                              mealSlot: meal.mealSlot,
+                            })
+                          }
+                        />
                       );
                     })}
                   </div>
@@ -601,5 +575,107 @@ function SwapDialog({ target, meals, recipes, onClose, onPick }: SwapDialogProps
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// =========================================================================
+// Generator Meal Card
+// Eigene Komponente, weil sie lokalen State (Detail-Dialog) braucht und
+// nicht in der `meals.map()`-Iteration in der Page sitzen darf.
+// =========================================================================
+
+type GeneratorMealCardProps = {
+  meal: GeneratedMeal;
+  recipe: RecipeWithIngredients | null;
+  macros: Macros | null;
+  onReroll: () => void;
+  onSwap: () => void;
+};
+
+function GeneratorMealCard({
+  meal,
+  recipe,
+  macros,
+  onReroll,
+  onSwap,
+}: GeneratorMealCardProps) {
+  const [detailOpen, setDetailOpen] = React.useState(false);
+  const clickable = recipe != null;
+
+  function handleContainerClick() {
+    if (!clickable) return;
+    // Klicks auf die Action-Buttons sollen den Dialog nicht öffnen — sie
+    // stoppen Propagation selbst (siehe unten). Hier reicht der einfache
+    // Bubble-Pfad: jeder Klick, der durchkommt, öffnet das Detail.
+    setDetailOpen(true);
+  }
+
+  function handleContainerKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!clickable) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setDetailOpen(true);
+    }
+  }
+
+  return (
+    <>
+      <div
+        className={`flex flex-col gap-2 rounded-md border p-3 transition-colors sm:flex-row sm:items-center sm:justify-between ${
+          clickable
+            ? "cursor-pointer [@media(hover:hover)]:hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            : ""
+        }`}
+        role={clickable ? "button" : undefined}
+        tabIndex={clickable ? 0 : undefined}
+        aria-haspopup={clickable ? "dialog" : undefined}
+        aria-expanded={clickable ? detailOpen : undefined}
+        aria-label={
+          clickable && recipe
+            ? `Details zu ${MEAL_SLOT_LABELS[meal.mealSlot]}: ${recipe.name}`
+            : undefined
+        }
+        onClick={clickable ? handleContainerClick : undefined}
+        onKeyDown={clickable ? handleContainerKeyDown : undefined}
+      >
+        <div className="min-w-0 flex-1">
+          <div className="mb-1">
+            <MealSlotChip slot={meal.mealSlot} />
+          </div>
+          <div className="truncate text-sm font-medium">
+            {recipe?.name ?? "Unbekanntes Rezept"}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {meal.servingFactor.toFixed(2)}× Portion
+            {macros ? ` · ${formatKcal(macros.kcal)}` : ""}
+          </div>
+        </div>
+        <div
+          className="flex gap-2"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <Button type="button" variant="outline" size="sm" onClick={onReroll}>
+            <Dices />
+            Würfeln
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={onSwap}>
+            <Replace />
+            Tauschen
+          </Button>
+        </div>
+      </div>
+
+      {recipe && (
+        <RecipeDetailDialog
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          recipe={recipe}
+          servingFactor={meal.servingFactor}
+          mealSlot={meal.mealSlot}
+        />
+      )}
+    </>
   );
 }
