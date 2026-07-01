@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
@@ -41,4 +42,55 @@ export async function signOut() {
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/login");
+}
+
+/**
+ * Signup mit Email + Passwort. Supabase schickt automatisch eine
+ * Bestätigungsmail — der Nutzer kann sich erst nach Klick auf den Link
+ * einloggen. Der Confirm-Link führt zurück auf /auth/callback, wo die
+ * Session gesetzt wird.
+ *
+ * Rückgabe:
+ *   - { error: string } → Formular zeigt Fehler an
+ *   - { success: true } → Formular zeigt Success-State ("Prüfe deine Mail")
+ */
+export async function signUp(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const passwordConfirm = String(formData.get("password_confirm") ?? "");
+
+  if (!email || !password) {
+    return { error: "E-Mail und Passwort sind erforderlich." };
+  }
+  if (password.length < 8) {
+    return { error: "Passwort muss mindestens 8 Zeichen haben." };
+  }
+  if (password !== passwordConfirm) {
+    return { error: "Passwörter stimmen nicht überein." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  // Origin dynamisch vom Request nehmen, damit Local-Dev und Prod
+  // dieselbe Server-Action nutzen können.
+  const hdrs = await headers();
+  const origin =
+    hdrs.get("origin") ??
+    (hdrs.get("host")
+      ? `https://${hdrs.get("host")}`
+      : "");
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
+    },
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true as const };
 }

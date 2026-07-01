@@ -55,3 +55,78 @@ export function useUpdateSettings() {
     },
   });
 }
+
+/**
+ * Template-Sync-Status: Vergleicht die vom User zuletzt importierte
+ * Template-Version (in user_settings) mit der aktuellen max-Version der
+ * Template-Tabellen. Wenn die Templates neuer sind, kann später ein
+ * Import-Flow angeboten werden.
+ *
+ * Für den ersten Wurf zeigen wir nur eine Info-Card in den Settings —
+ * kein tatsächlicher Import-Button.
+ */
+export type TemplateSyncStatus = {
+  ingredientBehind: boolean;
+  recipeBehind: boolean;
+  userIngredientVersion: number;
+  userRecipeVersion: number;
+  latestIngredientVersion: number;
+  latestRecipeVersion: number;
+};
+
+export function useTemplateSyncStatus() {
+  return useQuery({
+    queryKey: [...qk.settings, "template-sync"] as const,
+    queryFn: async (): Promise<TemplateSyncStatus | null> => {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const [settingsResp, ingResp, recResp] = await Promise.all([
+        supabase
+          .from("user_settings")
+          .select(
+            "template_snapshot_ingredient_version, template_snapshot_recipe_version",
+          )
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("template_ingredient")
+          .select("version")
+          .order("version", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("template_recipe")
+          .select("version")
+          .order("version", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+      // Fehler beim Lesen sollen die Settings-Page nicht sprengen —
+      // wir behandeln fehlende Werte defensiv als "kein Sync nötig".
+      const userIng =
+        (settingsResp.data?.template_snapshot_ingredient_version as
+          | number
+          | undefined) ?? 0;
+      const userRec =
+        (settingsResp.data?.template_snapshot_recipe_version as
+          | number
+          | undefined) ?? 0;
+      const latestIng = (ingResp.data?.version as number | undefined) ?? 0;
+      const latestRec = (recResp.data?.version as number | undefined) ?? 0;
+
+      return {
+        ingredientBehind: latestIng > userIng,
+        recipeBehind: latestRec > userRec,
+        userIngredientVersion: userIng,
+        userRecipeVersion: userRec,
+        latestIngredientVersion: latestIng,
+        latestRecipeVersion: latestRec,
+      };
+    },
+  });
+}

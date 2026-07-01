@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil, Check, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { useSettings, useUpdateSettings } from "@/lib/queries/settings";
+import { useSettings, useUpdateSettings, useTemplateSyncStatus } from "@/lib/queries/settings";
 import { useIngredients } from "@/lib/queries/ingredients";
 import { signOut } from "@/app/(auth)/login/actions";
 import {
@@ -93,6 +93,7 @@ export default function SettingsPage() {
   const settingsQuery = useSettings();
   const updateMutation = useUpdateSettings();
   const ingredientsQuery = useIngredients();
+  const syncQuery = useTemplateSyncStatus();
 
   const form = useForm<UserSettingsFormInput, unknown, UserSettingsFormValues>({
     resolver: zodResolver(userSettingsFormSchema),
@@ -598,6 +599,33 @@ export default function SettingsPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* 5. Template-Sync (nur wenn User hinterher hängt) */}
+      {syncQuery.data &&
+        (syncQuery.data.ingredientBehind || syncQuery.data.recipeBehind) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Neue Vorlagen verfügbar</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                Es gibt neue oder aktualisierte Basisdaten
+                {syncQuery.data.ingredientBehind ? " (Zutaten)" : ""}
+                {syncQuery.data.ingredientBehind && syncQuery.data.recipeBehind
+                  ? " und"
+                  : ""}
+                {syncQuery.data.recipeBehind ? " (Rezepte)" : ""}. Ein
+                Import-Flow folgt in einem späteren Release.
+              </p>
+              <p className="text-xs">
+                Debug: Zutaten {syncQuery.data.userIngredientVersion} →{" "}
+                {syncQuery.data.latestIngredientVersion}, Rezepte{" "}
+                {syncQuery.data.userRecipeVersion} →{" "}
+                {syncQuery.data.latestRecipeVersion}
+              </p>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }

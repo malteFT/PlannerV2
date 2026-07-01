@@ -11,7 +11,10 @@
     "test:watch": "vitest",
     "bls:import": "tsx scripts/import-bls.ts",
     "seed:ingredients": "tsx scripts/seed-ingredients.ts",
-    "seed:recipes": "tsx scripts/seed-recipes.ts"
+    "seed:recipes": "tsx scripts/seed-recipes.ts",
+    "seed:templates": "tsx scripts/seed-templates.ts",
+    "test:e2e:signup": "tsx scripts/e2e-signup.ts",
+    "test:e2e:public-signup": "tsx scripts/e2e-public-signup.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
